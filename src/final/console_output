@@ -1,1 +1,1950 @@
+markjoyce86@instance-20251202-002153:~$ # Set your preferred working directory (e.g., your home directory)
+WORK_DIR=~
+cd $WORK_DIR
 
+# Recreate the specific experiment directory used in the script (WF2000)
+mkdir -p WF2000
+cd WF2000
+
+# Download the R script from GCS (assuming gsutil is installed and configured)
+gsutil cp gs://markjoyceaustral_bukito7/Final\ Pipeline\ to\ Predict\ Churn\ v4.R .
+Copying gs://markjoyceaustral_bukito7/Final Pipeline to Predict Churn v4.R...
+/ [1 files][ 71.6 KiB/ 71.6 KiB]                                                
+Operation completed over 1 objects/71.6 KiB.                                     
+markjoyce86@instance-20251202-002153:~/WF2000$ # Using nohup: The script runs in the background, surviving terminal disconnection.
+# - Rscript: Executes the R script.
+# - & : Sends the process to the background.
+
+nohup Rscript "Final Pipeline to Predict Churn v4.R" > execution_log_2000.log 2>&1 &
+
+# Output: [1] <process_id>
+[1] 123483
+markjoyce86@instance-20251202-002153:~/WF2000$ # Watch the log file in real-time
+tail -f execution_log_2000.log
+
+ ============================================================ 
+PHASE 2: LOAD DATASET
+============================================================ 
+Downloading from: gs://markjoyceaustral_bukito5/datasets/analistasr_competencia_2025.csv.gz
+Copying gs://markjoyceaustral_bukito5/datasets/analistasr_competencia_2025.csv.gz...
+\ [1 files][709.6 MiB/709.6 MiB]                                                
+Operation completed over 1 objects/709.6 MiB.                                    
+✅ CHECKPOINT [DOWNLOAD]: Dataset downloaded from GCS
+[1] TRUE
+[1] TRUE
+📊 [PHASE_2_LOAD] Row count: 4883051
+Loaded: 4883051 rows x 155 columns (186563 unique customers)
+✅ CHECKPOINT [ROWS]: Dataset has 4883051 rows
+[1] TRUE
+✅ CHECKPOINT [REQUIRED_COLS]: Required columns present
+[1] TRUE
+✅ CHECKPOINT [NO_DUPLICATES]: No duplicate (cliente, mes) pairs (found 0)
+[1] TRUE
+
+Month distribution:
+    foto_mes      N
+       <int>  <int>
+ 1:   201901 124273
+ 2:   201902 125401
+ 3:   201903 125967
+ 4:   201904 126538
+ 5:   201905 127202
+ 6:   201906 128734
+ 7:   201907 130268
+ 8:   201908 132143
+ 9:   201909 133757
+10:   201910 136010
+11:   201911 137996
+12:   201912 139980
+13:   202001 143464
+14:   202002 146660
+15:   202003 148798
+16:   202004 149350
+17:   202005 150792
+18:   202006 153102
+19:   202007 154984
+20:   202008 156461
+21:   202009 157805
+22:   202010 159169
+23:   202011 160250
+24:   202012 160997
+25:   202101 161527
+26:   202102 162155
+27:   202103 163109
+28:   202104 163418
+29:   202105 163917
+30:   202106 164313
+31:   202107 164596
+32:   202108 164822
+33:   202109 165093
+    foto_mes      N
+✅ CHECKPOINT [MONTH_RANGE]: Months range from 201901 to 202109
+[1] TRUE
+✅ CHECKPOINT [TEST_MONTH_EXISTS]: Test month 202109 has 165093 rows (165093 customers)
+[1] TRUE
+💾 Checkpoint saved: phase2_loaded (652.6 MB)
+[1] "/dev/shm/checkpoint_phase2_loaded_exp2000.rds"
+
+✅ PHASE 2 COMPLETE: Dataset loaded and validated
+
+ ============================================================ 
+PHASE 3: CATASTROPHE ANALYSIS
+============================================================ 
+Applying catastrophe corrections...
+📊 [PHASE_3_CATASTROPHE] Row count: 4883051
+✅ CHECKPOINT [CATASTROPHE_CORRECTIONS]: Applied 44 catastrophe corrections
+[1] TRUE
+🗑️ Removed checkpoint: phase2_loaded
+
+✅ PHASE 3 COMPLETE: Catastrophe analysis
+
+ ============================================================ 
+PHASE 4: DATA DRIFTING CORRECTION (IPC)
+============================================================ 
+Deflating 73 monetary columns...
+✅ CHECKPOINT [IPC_DEFLATION]: IPC deflation applied correctly (ratio=1.9903, expected=1.9903)
+[1] TRUE
+📊 [PHASE_4_IPC] Row count: 4883051
+
+✅ PHASE 4 COMPLETE: Data drifting correction
+
+ ============================================================ 
+PHASE 5: INTRA-MONTH FEATURE ENGINEERING
+============================================================ 
+Creating banking-specific features...
+Handling infinite/NaN values...
+   Replaced 34 Inf and 5402 NaN values with NA
+✅ CHECKPOINT [FE_INTRA_FEATURES]: Created 65 intra-month features (expected >=30)
+[1] TRUE
+📊 [PHASE_5_FE_INTRA] Row count: 4883051
+✅ FE_INTRA complete: 155 -> 220 columns (+65)
+Removing redundant Visa/Master columns (only those consolidated via sum)...
+✅ Removed 40 consolidated Visa/Master columns
+   Kept 4 Visa/Master columns with independent predictive value
+💾 Checkpoint saved: phase5_fe_intra (1248.0 MB)
+[1] "/dev/shm/checkpoint_phase5_fe_intra_exp2000.rds"
+
+✅ PHASE 5 COMPLETE: Intra-month feature engineering
+
+ ============================================================ 
+PHASE 6: TEMPORAL FEATURE ENGINEERING (FEhist)
+============================================================ 
+Indices: <foto_mes>, <cliente_antiguedad>
+         numero_de_cliente foto_mes active_quarter cliente_vip internet
+                     <int>    <int>          <int>       <int>    <int>
+      1:          29183733   201901              1           0        1
+      2:          29183733   201902              1           0        1
+      3:          29183733   201903              1           0        1
+      4:          29183733   201904              1           0        1
+      5:          29183733   201905              1           0        1
+     ---                                                               
+4883047:         188115120   202109              1           0        0
+4883048:         188116871   202109              1           0        0
+4883049:         188122277   202109              1           0        0
+4883050:         188128903   202109              0           0        0
+4883051:         188136205   202109              0           0        0
+         cliente_edad cliente_antiguedad mrentabilidad mrentabilidad_annual
+                <int>              <int>         <num>                <num>
+      1:           44                 69     171.82287          29078.34802
+      2:           44                 70     821.16301          25823.07045
+      3:           44                 71    2131.94485          22543.09742
+      4:           44                 72    5859.65515          25693.27100
+      5:           44                 73    4485.07529          26979.53409
+     ---                                                                   
+4883047:           48                  1      76.83765             76.83765
+4883048:           30                  1     276.60254            276.60254
+4883049:           23                  1      88.69379             88.69379
+4883050:           31                  1       0.00000              0.00000
+4883051:           54                  1       0.00000              0.00000
+         mcomisiones mactivos_margen mpasivos_margen cproductos tcuentas
+               <num>           <num>           <num>      <int>    <int>
+      1:  1245.63119      -649.87376      -265.56614         11        1
+      2:   840.43328       -26.57572        10.14326         11        1
+      3:   970.08211       108.75253       881.74812         11        1
+      4:  1030.31287      1614.47891      2502.60630         11        1
+      5:  1275.64333     -1118.63101      3854.71955         11        1
+     ---                                                                
+4883047:    32.49436       -10.62218        48.42763          6        1
+4883048:     0.00000      -154.54845       390.35805          7        1
+4883049:     0.00000      -121.67885       197.29697          7        1
+4883050:     0.00000         0.00000         0.00000          8        2
+4883051:     0.00000         0.00000         0.00000          6        2
+         ccuenta_corriente mcuenta_corriente_adicional mcuenta_corriente
+                     <int>                       <num>             <num>
+      1:                 1                           0         -9254.750
+      2:                 1                           0        -12086.988
+      3:                 1                           0        -11708.041
+      4:                 1                           0         -3778.038
+      5:                 1                           0         -4532.392
+     ---                                                                
+4883047:                 1                           0             0.000
+4883048:                 1                           0             0.000
+4883049:                 1                           0             0.000
+4883050:                 1                           0             0.000
+4883051:                 1                           0             0.000
+         ccaja_ahorro mcaja_ahorro mcaja_ahorro_adicional mcaja_ahorro_dolares
+                <int>        <num>                  <num>                <num>
+      1:            2    4198.6041                      0                    0
+      2:            2       0.0000                      0                    0
+      3:            2       0.0000                      0                    0
+      4:            2     954.8588                      0                    0
+      5:            2       0.0000                      0                    0
+     ---                                                                      
+4883047:            2    3313.6235                      0                    0
+4883048:            2   17803.8051                      0                    0
+4883049:            2    5643.0280                      0                    0
+4883050:            2       0.0000                      0                    0
+4883051:            2       0.0000                      0                    0
+         cdescubierto_preacordado mcuentas_saldo ctarjeta_debito
+                            <int>          <num>           <int>
+      1:                        1  -1.361690e+04               1
+      2:                        1  -1.345522e+04               1
+      3:                        1  -1.206754e+04               1
+      4:                        1  -8.176906e+02               1
+      5:                        1  -6.125615e+03               1
+     ---                                                        
+4883047:                        1   6.934583e+03               1
+4883048:                        1   6.494542e-02               2
+4883049:                        1   2.327752e+04               1
+4883050:                        1   0.000000e+00               1
+4883051:                        1   0.000000e+00               1
+         ctarjeta_debito_transacciones mautoservicio ctarjeta_visa
+                                 <int>         <num>         <int>
+      1:                             0         0.000             1
+      2:                             0         0.000             1
+      3:                             0         0.000             1
+      4:                             2      4575.110             1
+      5:                             0         0.000             1
+     ---                                                          
+4883047:                             5      4250.468             1
+4883048:                             0         0.000             1
+4883049:                             0         0.000             1
+4883050:                             0         0.000             1
+4883051:                             0         0.000             1
+         ctarjeta_visa_transacciones mtarjeta_visa_consumo ctarjeta_master
+                               <int>                 <num>           <int>
+      1:                          10            22552.0248               1
+      2:                           9            14163.7292               1
+      3:                          15            59811.5696               1
+      4:                          17            34574.1549               1
+      5:                          14            29066.2815               1
+     ---                                                                  
+4883047:                           1              409.6829               1
+4883048:                           5            18209.3459               1
+4883049:                           0                0.0000               1
+4883050:                           0                0.0000               1
+4883051:                           0                0.0000               1
+         ctarjeta_master_transacciones mtarjeta_master_consumo
+                                 <int>                   <num>
+      1:                            14              26628.5238
+      2:                            25              58332.5814
+      3:                            15              27771.5621
+      4:                            18              30378.7081
+      5:                            12              25947.8261
+     ---                                                      
+4883047:                             1                253.9366
+4883048:                             0                  0.0000
+4883049:                             0                  0.0000
+4883050:                             0                  0.0000
+4883051:                             0                  0.0000
+         cprestamos_personales mprestamos_personales cprestamos_prendarios
+                         <int>                 <num>                 <int>
+      1:                     3              169424.3                     0
+      2:                     3              156229.9                     0
+      3:                     3              142226.3                     0
+      4:                     3              131005.3                     0
+      5:                     3              120402.3                     0
+     ---                                                                  
+4883047:                     0                   0.0                     0
+4883048:                     0                   0.0                     0
+4883049:                     0                   0.0                     0
+4883050:                     0                   0.0                     0
+4883051:                     0                   0.0                     0
+         mprestamos_prendarios cprestamos_hipotecarios mprestamos_hipotecarios
+                         <num>                   <int>                   <num>
+      1:                     0                       0                       0
+      2:                     0                       0                       0
+      3:                     0                       0                       0
+      4:                     0                       0                       0
+      5:                     0                       0                       0
+     ---                                                                      
+4883047:                     0                       0                       0
+4883048:                     0                       0                       0
+4883049:                     0                       0                       0
+4883050:                     0                       0                       0
+4883051:                     0                       0                       0
+         cplazo_fijo mplazo_fijo_dolares mplazo_fijo_pesos cinversion1
+               <int>               <num>             <num>       <int>
+      1:           0                   0                 0           0
+      2:           0                   0                 0           0
+      3:           0                   0                 0           0
+      4:           0                   0                 0           0
+      5:           0                   0                 0           0
+     ---                                                              
+4883047:           0                   0                 0           0
+4883048:           0                   0                 0           0
+4883049:           0                   0                 0           0
+4883050:           0                   0                 0           0
+4883051:           0                   0                 0           0
+         minversion1_pesos minversion1_dolares cinversion2 minversion2
+                     <num>               <num>       <int>       <num>
+      1:                 0                   0           0           0
+      2:                 0                   0           0           0
+      3:                 0                   0           0           0
+      4:                 0                   0           0           0
+      5:                 0                   0           0           0
+     ---                                                              
+4883047:                 0                   0           0           0
+4883048:                 0                   0           0           0
+4883049:                 0                   0           0           0
+4883050:                 0                   0           0           0
+4883051:                 0                   0           0           0
+         cseguro_vida cseguro_auto cseguro_vivienda
+                <int>        <int>            <int>
+      1:            2            0                1
+      2:            2            0                1
+      3:            2            0                1
+      4:            2            0                1
+      5:            2            0                1
+     ---                                           
+4883047:            0            0                0
+4883048:            0            0                0
+4883049:            0            0                0
+4883050:            1            0                0
+4883051:            0            0                0
+         cseguro_accidentes_personales ccaja_seguridad cpayroll_trx  mpayroll
+                                 <int>           <int>        <int>     <num>
+      1:                             0               0            1  98171.00
+      2:                             0               0            1  91448.48
+      3:                             0               0            1  89200.11
+      4:                             0               0            1 100567.15
+      5:                             0               0            1 100387.93
+     ---                                                                     
+4883047:                             0               0            0      0.00
+4883048:                             0               0            3  46626.88
+4883049:                             0               0            1      0.00
+4883050:                             0               0            0      0.00
+4883051:                             0               0            0      0.00
+         mpayroll2 cpayroll2_trx ccuenta_debitos_automaticos
+             <num>         <int>                       <int>
+      1:         0             0                           1
+      2:         0             0                           1
+      3:         0             0                           1
+      4:         0             0                           1
+      5:         0             0                           1
+     ---                                                    
+4883047:         0             0                           0
+4883048:         0             0                           0
+4883049:         0             0                           0
+4883050:         0             0                           0
+4883051:         0             0                           0
+         mcuenta_debitos_automaticos ctarjeta_visa_debitos_automaticos
+                               <num>                             <int>
+      1:                    137.5697                                 2
+      2:                    132.5335                                 1
+      3:                    126.4632                                 2
+      4:                    122.5419                                 2
+      5:                    178.4247                                 1
+     ---                                                              
+4883047:                      0.0000                                 0
+4883048:                      0.0000                                 0
+4883049:                      0.0000                                 0
+4883050:                      0.0000                                 0
+4883051:                      0.0000                                 0
+         mttarjeta_visa_debitos_automaticos ctarjeta_master_debitos_automaticos
+                                      <num>                               <int>
+      1:                           9542.070                                   3
+      2:                           1207.796                                   2
+      3:                           8771.704                                   3
+      4:                           4837.338                                   4
+      5:                           1140.740                                   2
+     ---                                                                       
+4883047:                              0.000                                   0
+4883048:                              0.000                                   0
+4883049:                              0.000                                   0
+4883050:                              0.000                                   0
+4883051:                              0.000                                   0
+         mttarjeta_master_debitos_automaticos cpagodeservicios mpagodeservicios
+                                        <num>            <int>            <num>
+      1:                             5198.413                0                0
+      2:                             2155.433                0                0
+      3:                             4868.121                0                0
+      4:                             5481.605                0                0
+      5:                             4663.913                0                0
+     ---                                                                       
+4883047:                                0.000                0                0
+4883048:                                0.000                0                0
+4883049:                                0.000                0                0
+4883050:                                0.000                0                0
+4883051:                                0.000                0                0
+         cpagomiscuentas mpagomiscuentas ccajeros_propios_descuentos
+                   <int>           <num>                       <int>
+      1:               0               0                           0
+      2:               0               0                           0
+      3:               0               0                           0
+      4:               0               0                           0
+      5:               0               0                           0
+     ---                                                            
+4883047:               0               0                           0
+4883048:               0               0                           0
+4883049:               0               0                           0
+4883050:               0               0                           0
+4883051:               0               0                           0
+         mcajeros_propios_descuentos ctarjeta_visa_descuentos
+                               <num>                    <int>
+      1:                           0                        0
+      2:                           0                        0
+      3:                           0                        0
+      4:                           0                        0
+      5:                           0                        1
+     ---                                                     
+4883047:                           0                        0
+4883048:                           0                        0
+4883049:                           0                        0
+4883050:                           0                        0
+4883051:                           0                        0
+         mtarjeta_visa_descuentos ctarjeta_master_descuentos
+                            <num>                      <int>
+      1:                        0                          0
+      2:                        0                          0
+      3:                        0                          0
+      4:                        0                          0
+      5:                        0                          2
+     ---                                                    
+4883047:                        0                          0
+4883048:                        0                          0
+4883049:                        0                          0
+4883050:                        0                          0
+4883051:                        0                          0
+         mtarjeta_master_descuentos ccomisiones_mantenimiento
+                              <num>                     <int>
+      1:                          0                         0
+      2:                          0                         0
+      3:                          0                         0
+      4:                          0                         0
+      5:                          0                         0
+     ---                                                     
+4883047:                          0                         0
+4883048:                          0                         0
+4883049:                          0                         0
+4883050:                          0                         0
+4883051:                          0                         0
+         mcomisiones_mantenimiento ccomisiones_otras mcomisiones_otras cforex
+                             <num>             <int>             <num>  <int>
+      1:                         0                10        1245.63119      0
+      2:                         0                10         840.43328      0
+      3:                         0                12         970.08211      0
+      4:                         0                14        1030.31287      0
+      5:                         0                13        1275.64333      0
+     ---                                                                     
+4883047:                         0                 6          32.49436      0
+4883048:                         0                 0           0.00000      0
+4883049:                         0                 0           0.00000      0
+4883050:                         0                 0           0.00000      0
+4883051:                         0                 0           0.00000      0
+         cforex_buy mforex_buy cforex_sell mforex_sell
+              <int>      <num>       <int>       <num>
+      1:          0          0           0           0
+      2:          0          0           0           0
+      3:          0          0           0           0
+      4:          0          0           0           0
+      5:          0          0           0           0
+     ---                                              
+4883047:          0          0           0           0
+4883048:          0          0           0           0
+4883049:          0          0           0           0
+4883050:          0          0           0           0
+4883051:          0          0           0           0
+         ctransferencias_recibidas mtransferencias_recibidas
+                             <int>                     <num>
+      1:                         0                     0.000
+      2:                         0                     0.000
+      3:                         0                     0.000
+      4:                         0                     0.000
+      5:                         0                     0.000
+     ---                                                    
+4883047:                         2                  9703.762
+4883048:                         3                 46555.041
+4883049:                         0                     0.000
+4883050:                         0                     0.000
+4883051:                         0                     0.000
+         ctransferencias_emitidas mtransferencias_emitidas
+                            <int>                    <num>
+      1:                        1                 4669.251
+      2:                        0                    0.000
+      3:                        0                    0.000
+      4:                        0                    0.000
+      5:                        0                    0.000
+     ---                                                  
+4883047:                        1                15193.872
+4883048:                        5                88898.963
+4883049:                        1                29625.935
+4883050:                        0                    0.000
+4883051:                        0                    0.000
+         cextraccion_autoservicio mextraccion_autoservicio ccheques_depositados
+                            <int>                    <num>                <int>
+      1:                        0                    0.000                    0
+      2:                        0                    0.000                    0
+      3:                        0                    0.000                    0
+      4:                        0                    0.000                    0
+      5:                        0                    0.000                    0
+     ---                                                                       
+4883047:                        1                 1692.911                    0
+4883048:                        0                    0.000                    0
+4883049:                        0                    0.000                    0
+4883050:                        0                    0.000                    0
+4883051:                        0                    0.000                    0
+         mcheques_depositados ccheques_emitidos mcheques_emitidos
+                        <num>             <int>             <num>
+      1:                    0                 0                 0
+      2:                    0                 0                 0
+      3:                    0                 0                 0
+      4:                    0                 0                 0
+      5:                    0                 0                 0
+     ---                                                         
+4883047:                    0                 0                 0
+4883048:                    0                 0                 0
+4883049:                    0                 0                 0
+4883050:                    0                 0                 0
+4883051:                    0                 0                 0
+         ccheques_depositados_rechazados mcheques_depositados_rechazados
+                                   <int>                           <num>
+      1:                               0                               0
+      2:                               0                               0
+      3:                               0                               0
+      4:                               0                               0
+      5:                               0                               0
+     ---                                                                
+4883047:                               0                               0
+4883048:                               0                               0
+4883049:                               0                               0
+4883050:                               0                               0
+4883051:                               0                               0
+         ccheques_emitidos_rechazados mcheques_emitidos_rechazados tcallcenter
+                                <int>                        <num>       <int>
+      1:                            0                            0           0
+      2:                            0                            0           0
+      3:                            0                            0           0
+      4:                            0                            0           1
+      5:                            0                            0           0
+     ---                                                                      
+4883047:                            0                            0           0
+4883048:                            0                            0           0
+4883049:                            0                            0           0
+4883050:                            0                            0           0
+4883051:                            0                            0           0
+         ccallcenter_transacciones thomebanking chomebanking_transacciones
+                             <int>        <int>                      <int>
+      1:                         0            1                         12
+      2:                         0            0                          0
+      3:                         0            1                          5
+      4:                         2            0                          0
+      5:                         0            0                          0
+     ---                                                                  
+4883047:                         0            1                         17
+4883048:                         0            1                         21
+4883049:                         0            1                          9
+4883050:                         0            1                          0
+4883051:                         0            0                          0
+         ccajas_transacciones ccajas_consultas ccajas_depositos
+                        <int>            <int>            <int>
+      1:                    0                0                0
+      2:                    0                0                0
+      3:                    0                0                0
+      4:                    0                0                0
+      5:                    0                0                0
+     ---                                                       
+4883047:                    0                0                0
+4883048:                    0                0                0
+4883049:                    0                0                0
+4883050:                    0                0                0
+4883051:                    0                0                0
+         ccajas_extracciones ccajas_otras catm_trx     matm catm_trx_other
+                       <int>        <int>    <int>    <num>          <int>
+      1:                   0            0        0    0.000              0
+      2:                   0            0        0    0.000              0
+      3:                   0            0        0    0.000              0
+      4:                   0            0        0    0.000              0
+      5:                   0            0        0    0.000              0
+     ---                                                                  
+4883047:                   0            0        1 1692.911              0
+4883048:                   0            0        0    0.000              0
+4883049:                   0            0        0    0.000              0
+4883050:                   0            0        0    0.000              0
+4883051:                   0            0        0    0.000              0
+         matm_other ctrx_quarter tmobile_app cmobile_app_trx Master_delinquency
+              <num>        <int>       <int>           <int>              <int>
+      1:          0           95          NA              NA                  0
+      2:          0          105          NA              NA                  0
+      3:          0           96          NA              NA                  0
+      4:          0          116          NA              NA                  0
+      5:          0          105          NA              NA                  0
+     ---                                                                       
+4883047:          0           20           0               1                  0
+4883048:          0           19           0               1                  0
+4883049:          0            5           0               1                  0
+4883050:          0            2           0               1                  0
+4883051:          0            2           0               0                  0
+         Master_status Visa_delinquency Visa_status clase_ternaria  kmes
+                 <int>            <int>       <int>         <char> <num>
+      1:             0                0           0       CONTINUA     1
+      2:             0                0           0       CONTINUA     2
+      3:             0                1           0       CONTINUA     3
+      4:             0                0           0       CONTINUA     4
+      5:             0                0           0       CONTINUA     5
+     ---                                                                
+4883047:             0                0           0                    9
+4883048:             0                0           0                    9
+4883049:             0                0           0                    9
+4883050:             0                0           0                    9
+4883051:             0                0           0                    9
+         ctrx_quarter_normalizado mpayroll_sobre_edad vm_status01 vm_status02
+                            <num>               <num>       <int>       <int>
+      1:                       95            2231.159           0           0
+      2:                      105            2078.375           0           0
+      3:                       96            2027.275           0           0
+      4:                      116            2285.617           0           0
+      5:                      105            2281.544           0           0
+     ---                                                                     
+4883047:                      100               0.000           0           0
+4883048:                       95            1554.229           0           0
+4883049:                       25               0.000           0           0
+4883050:                       10               0.000           0           0
+4883051:                       10               0.000           0           0
+         vm_status03 vm_status04 vm_status05 vm_status06 mv_status07
+               <int>       <int>       <int>       <int>       <int>
+      1:           0           0           0           0           0
+      2:           0           0           0           0           0
+      3:           0           0           0           0           0
+      4:           0           0           0           0           0
+      5:           0           0           0           0           0
+     ---                                                            
+4883047:           0           0           0           0           0
+4883048:           0           0           0           0           0
+4883049:           0           0           0           0           0
+4883050:           0           0           0           0           0
+4883051:           0           0           0           0           0
+         vm_mfinanciacion_limite vm_msaldototal vm_msaldopesos vm_msaldodolares
+                           <num>          <num>          <num>            <num>
+      1:               100855.82     84101.5905     94953.7977         175.4850
+      2:                97163.61     71679.1551     71652.8094        2260.9306
+      3:               231783.41    121977.4741    130427.7143         532.9862
+      4:               224596.33    133576.8061    136615.5332        6160.7799
+      5:               218054.69    100325.3463    106856.6766        1081.4951
+     ---                                                                       
+4883047:               255968.08       610.4364       671.5789           0.0000
+4883048:               383952.12      9772.9938     11463.7179           0.0000
+4883049:               788221.69         0.0000         0.0000           0.0000
+4883050:               806663.61         0.0000         0.0000           0.0000
+4883051:               676955.57         0.0000         0.0000           0.0000
+         vm_mconsumospesos vm_mconsumosdolares vm_mlimitecompra
+                     <num>               <num>            <num>
+      1:        18092.2531           0.2985455         112062.0
+      2:        38080.4613          52.4419937         107959.6
+      3:        64298.7093          18.2412980         257537.1
+      4:        37381.2898         130.5553469         249551.5
+      5:        18342.4021          19.1919245         242283.0
+     ---                                                       
+4883047:          409.6829           0.0000000         284409.0
+4883048:                NA                  NA         426613.5
+4883049:                NA                  NA         885227.2
+4883050:                NA                  NA         896422.9
+4883051:                NA                  NA         752172.9
+         vm_madelantopesos vm_madelantodolares vm_mpagado vm_mpagospesos
+                     <num>               <num>      <num>          <num>
+      1:                 0                   0          0      -85617.11
+      2:                 0                   0          0      -91650.77
+      3:                 0                   0          0      -31693.08
+      4:                 0                   0          0      -57854.35
+      5:                 0                   0          0      -90856.12
+     ---                                                                
+4883047:                 0                   0          0           0.00
+4883048:                NA                  NA          0             NA
+4883049:                NA                  NA          0             NA
+4883050:                NA                  NA          0             NA
+4883051:                NA                  NA          0             NA
+         vm_mpagosdolares vm_mconsumototal vm_cconsumos vm_cadelantosefectivo
+                    <num>            <num>        <int>                 <int>
+      1:          0.00000       18092.2531           10                     0
+      2:          0.00000       38080.4613           19                     0
+      3:         43.72789       64298.7093           19                     0
+      4:          0.00000       37381.2898           23                     0
+      5:          0.00000       18342.4021           11                     0
+     ---                                                                     
+4883047:          0.00000         409.6829            1                     0
+4883048:               NA               NA           NA                    NA
+4883049:               NA               NA           NA                    NA
+4883050:               NA               NA           NA                    NA
+4883051:               NA               NA           NA                    NA
+         vm_mpagominimo vm_Fvencimiento vm_Finiciomora vm_fultimo_cierre
+                  <num>           <int>          <int>             <int>
+      1:    24326.79794           -1580             NA                 8
+      2:    13112.58843           -1552             NA                 8
+      3:    38244.26268           -1521              0                11
+      4:    15867.31463           -1491             NA                 6
+      5:    11225.77833           -1460             NA                 9
+     ---                                                                
+4883047:       25.39366           -2190             NA                 8
+4883048:        0.00000           -2190             NA                 1
+4883049:        0.00000           -2190             NA                 8
+4883050:        0.00000           -2190             NA                 1
+4883051:        0.00000           -2190             NA                 1
+         vm_fechaalta vm_utilization vm_payment_ratio vm_spend_intensity
+                <int>          <num>            <num>              <num>
+      1:         2083    0.750484742                0        0.161447124
+      2:         2111    0.663938330                0        0.352725669
+      3:         2142    0.473628809                0        0.249666763
+      4:         2172    0.535265403                0        0.149793304
+      5:         2203    0.414081624                0        0.075706209
+     ---                                                                
+4883047:           25    0.002146326                0        0.001440466
+4883048:           15    0.022908257                0                 NA
+4883049:           16    0.000000000                0                 NA
+4883050:           11    0.000000000                0                 NA
+4883051:            1    0.000000000                0                 NA
+         vm_cash_vs_purchase fe_digital_engagement fe_branch_dependency
+                       <num>                 <int>                <int>
+      1:                   0                   119                    0
+      2:                   0                   139                    0
+      3:                   0                   126                    0
+      4:                   0                   153                    0
+      5:                   0                   131                    0
+     ---                                                               
+4883047:                   0                    27                    0
+4883048:                  NA                    24                    0
+4883049:                  NA                     5                    0
+4883050:                  NA                     2                    0
+4883051:                  NA                     2                    0
+         fe_remote_service fe_channel_shift fe_liquid_assets fe_fixed_deposits
+                     <int>            <num>            <num>             <num>
+      1:                12              119        -5056.146                 0
+      2:                 0              139       -12086.988                 0
+      3:                 5              126       -11708.041                 0
+      4:                 2              153        -2823.180                 0
+      5:                 0              131        -4532.392                 0
+     ---                                                                      
+4883047:                17               27         3313.623                 0
+4883048:                21               24        17803.805                 0
+4883049:                 9                5         5643.028                 0
+4883050:                 0                2            0.000                 0
+4883051:                 0                2            0.000                 0
+         fe_liquidity_ratio fe_total_debt fe_debt_service_ratio
+                      <num>         <num>                 <num>
+      1:          -5056.146      169424.3             980.33481
+      2:         -12086.988      156229.9             190.02302
+      3:         -11708.041      142226.3              66.68073
+      4:          -2823.180      131005.3              22.35335
+      5:          -4532.392      120402.3              26.83911
+     ---                                                       
+4883047:           3313.623           0.0               0.00000
+4883048:          17803.805           0.0               0.00000
+4883049:           5643.028           0.0               0.00000
+4883050:              0.000           0.0               0.00000
+4883051:              0.000           0.0               0.00000
+         fe_avg_transaction fe_cash_drain fe_check_activity fe_transfer_balance
+                      <num>         <num>             <num>               <num>
+      1:           1967.222     0.0000000                 0           -4669.251
+      2:           2071.323     0.0000000                 0               0.000
+      3:           2825.262     0.0000000                 0               0.000
+      4:           1931.333     0.0000000                 0               0.000
+      5:           2037.560     0.0000000                 0               0.000
+     ---                                                                       
+4883047:           1638.029     0.5107399                 0           -5490.110
+4883048:           3034.891     0.0000000                 0          -42343.922
+4883049:              0.000     0.0000000                 0          -29625.935
+4883050:              0.000     0.0000000                 0               0.000
+4883051:              0.000     0.0000000                 0               0.000
+         fe_product_concentration fe_insurance_penetration
+                            <num>                    <num>
+      1:               0.09722222                0.2500000
+      2:               0.09722222                0.2500000
+      3:               0.09722222                0.2500000
+      4:               0.09722222                0.2500000
+      5:               0.09722222                0.2500000
+     ---                                                  
+4883047:               0.10204082                0.0000000
+4883048:               0.07812500                0.0000000
+4883049:               0.07812500                0.0000000
+4883050:               0.09876543                0.1111111
+4883051:               0.16326531                0.0000000
+         fe_investment_sophistication fe_loan_diversity fe_crosssell_gap
+                                <num>             <int>            <num>
+      1:                            0                 1                4
+      2:                            0                 1                4
+      3:                            0                 1                4
+      4:                            0                 1                4
+      5:                            0                 1                4
+     ---                                                                
+4883047:                            0                 0                9
+4883048:                            0                 0                8
+4883049:                            0                 0                8
+4883050:                            0                 0                7
+4883051:                            0                 0                9
+         fe_flag_monoproduct fe_profit_per_product fe_profitability_trend
+                       <int>                 <num>                  <num>
+      1:                   0              14.31857             0.07090511
+      2:                   0              68.43025             0.38158028
+      3:                   0             177.66207             1.13481315
+      4:                   0             488.30460             2.73663579
+      5:                   0             373.75627             1.99480497
+     ---                                                                 
+4883047:                   0              10.97681            11.84583295
+4883048:                   0              34.57532            11.95677273
+4883049:                   0              11.08672            11.86621148
+4883050:                   0               0.00000             0.00000000
+4883051:                   0               0.00000             0.00000000
+         fe_fee_burden fe_npv_proxy fe_tenure_years fe_flag_early_lifecycle
+                 <num>        <num>           <num>                   <int>
+      1:    14.4151202 1.672005e+05      5.75000000                       0
+      2:     2.0444444 1.506346e+05      5.83333333                       0
+      3:     0.9096176 1.333800e+05      5.91666667                       0
+      4:     0.3516033 1.541596e+05      6.00000000                       0
+      5:     0.5687124 1.641255e+05      6.08333333                       0
+     ---                                                                   
+4883047:     0.8349265 6.403137e+00      0.08333333                       1
+4883048:     0.0000000 2.305021e+01      0.08333333                       1
+4883049:     0.0000000 7.391149e+00      0.08333333                       1
+4883050:     0.0000000 0.000000e+00      0.08333333                       1
+4883051:     0.0000000 0.000000e+00      0.08333333                       1
+         fe_vip_tenure fe_card_maturity fe_flag_card_closing fe_flag_delinquent
+                 <num>            <int>                <int>              <int>
+      1:             0             2083                    0                  0
+      2:             0             2111                    0                  0
+      3:             0             2142                    0                  1
+      4:             0             2172                    0                  0
+      5:             0             2203                    0                  0
+     ---                                                                       
+4883047:             0               25                    0                  0
+4883048:             0               15                    0                  0
+4883049:             0               16                    0                  0
+4883050:             0               11                    0                  0
+4883051:             0                1                    0                  0
+         fe_flag_early_delinquency fe_bounced_check_ratio
+                             <int>                  <num>
+      1:                        NA                      0
+      2:                        NA                      0
+      3:                         0                      0
+      4:                        NA                      0
+      5:                        NA                      0
+     ---                                                 
+4883047:                        NA                      0
+4883048:                        NA                      0
+4883049:                        NA                      0
+4883050:                        NA                      0
+4883051:                        NA                      0
+✅ Pre-allocated column slots: 180 -> 2180
+Pre-computing customer grouping structure...
+✅ 186563 unique customers
+   Months per customer: min=1, median=33, max=33
+
+PRIORITY 1: Critical temporal features...
+^C
+markjoyce86@instance-20251202-002153:~/WF2000$ kill 123483
+markjoyce86@instance-20251202-002153:~/WF2000$ tail -f execution_log_2000.log
+4883048:                        NA                      0
+4883049:                        NA                      0
+4883050:                        NA                      0
+4883051:                        NA                      0
+✅ Pre-allocated column slots: 180 -> 2180
+Pre-computing customer grouping structure...
+✅ 186563 unique customers
+   Months per customer: min=1, median=33, max=33
+
+PRIORITY 1: Critical temporal features...
+^C
+[1]+  Terminated              nohup Rscript "Final Pipeline to Predict Churn v4.R" > execution_log_2000.log 2>&1
+markjoyce86@instance-20251202-002153:~/WF2000$ # Output: [1] <process_id>
+[1] 123483
+-bash: [1]: command not found
+markjoyce86@instance-20251202-002153:~/WF2000$ kill -9 123483
+-bash: kill: (123483) - No such process
+markjoyce86@instance-20251202-002153:~/WF2000$ tail -f execution_log_2000.log
+4883048:                        NA                      0
+4883049:                        NA                      0
+4883050:                        NA                      0
+4883051:                        NA                      0
+✅ Pre-allocated column slots: 180 -> 2180
+Pre-computing customer grouping structure...
+✅ 186563 unique customers
+   Months per customer: min=1, median=33, max=33
+
+PRIORITY 1: Critical temporal features...
+^C
+markjoyce86@instance-20251202-002153:~/WF2000$ ps aux | grep 123483
+markjoy+  125641  0.0  0.0   3752  1812 pts/2    S+   21:12   0:00 grep 123483
+markjoyce86@instance-20251202-002153:~/WF2000$ kill 125641
+-bash: kill: (125641) - No such process
+markjoyce86@instance-20251202-002153:~/WF2000$ kill -9 125641
+-bash: kill: (125641) - No such process
+markjoyce86@instance-20251202-002153:~/WF2000$ free
+               total        used        free      shared  buff/cache   available
+Mem:       264128616     4059964   257663580     1278648     5332120   260068652
+Swap:              0           0           0
+markjoyce86@instance-20251202-002153:~/WF2000$ # Set your desired working directory (e.g., your home folder)
+WORK_DIR=~
+cd $WORK_DIR
+
+# Create the experiment folder (WF2000, as defined in the script)
+mkdir -p WF2000
+cd WF2000
+
+# Download the R script using gsutil cp
+# NOTE: This requires gsutil to be installed and authenticated.
+gsutil cp gs://markjoyceaustral_bukito7/Final\ Pipeline\ to\ Predict\ Churn\ v5.R .
+Copying gs://markjoyceaustral_bukito7/Final Pipeline to Predict Churn v5.R...
+/ [1 files][ 71.6 KiB/ 71.6 KiB]                                                
+Operation completed over 1 objects/71.6 KiB.                                     
+markjoyce86@instance-20251202-002153:~/WF2000$ # Execute Rscript in background, redirecting output to execution_log.log
+nohup Rscript "Final Pipeline to Predict Churn v5.R" > execution_log_v5.log 2>&1 &
+[1] 126813
+markjoyce86@instance-20251202-002153:~/WF2000$ # Watch the log file for progress messages and checkpoints
+tail -f execution_log_v5.log
+Working directory: /home/markjoyce86/WF2000
+
+✅ PHASE 1 COMPLETE: Environment setup
+
+ ============================================================ 
+PHASE 2: LOAD DATASET
+============================================================ 
+Downloading from: gs://markjoyceaustral_bukito5/datasets/analistasr_competencia_2025.csv.gz
+Copying gs://markjoyceaustral_bukito5/datasets/analistasr_competencia_2025.csv.gz...
+| [1 files][709.6 MiB/709.6 MiB]                                                
+Operation completed over 1 objects/709.6 MiB.                                    
+✅ CHECKPOINT [DOWNLOAD]: Dataset downloaded from GCS
+[1] TRUE
+[1] TRUE
+📊 [PHASE_2_LOAD] Row count: 4883051
+Loaded: 4883051 rows x 155 columns (186563 unique customers)
+✅ CHECKPOINT [ROWS]: Dataset has 4883051 rows
+[1] TRUE
+✅ CHECKPOINT [REQUIRED_COLS]: Required columns present
+[1] TRUE
+✅ CHECKPOINT [NO_DUPLICATES]: No duplicate (cliente, mes) pairs (found 0)
+[1] TRUE
+
+Month distribution:
+    foto_mes      N
+       <int>  <int>
+ 1:   201901 124273
+ 2:   201902 125401
+ 3:   201903 125967
+ 4:   201904 126538
+ 5:   201905 127202
+ 6:   201906 128734
+ 7:   201907 130268
+ 8:   201908 132143
+ 9:   201909 133757
+10:   201910 136010
+11:   201911 137996
+12:   201912 139980
+13:   202001 143464
+14:   202002 146660
+15:   202003 148798
+16:   202004 149350
+17:   202005 150792
+18:   202006 153102
+19:   202007 154984
+20:   202008 156461
+21:   202009 157805
+22:   202010 159169
+23:   202011 160250
+24:   202012 160997
+25:   202101 161527
+26:   202102 162155
+27:   202103 163109
+28:   202104 163418
+29:   202105 163917
+30:   202106 164313
+31:   202107 164596
+32:   202108 164822
+33:   202109 165093
+    foto_mes      N
+✅ CHECKPOINT [MONTH_RANGE]: Months range from 201901 to 202109
+[1] TRUE
+✅ CHECKPOINT [TEST_MONTH_EXISTS]: Test month 202109 has 165093 rows (165093 customers)
+[1] TRUE
+💾 Checkpoint saved: phase2_loaded (652.6 MB)
+[1] "/dev/shm/checkpoint_phase2_loaded_exp2000.rds"
+
+✅ PHASE 2 COMPLETE: Dataset loaded and validated
+
+ ============================================================ 
+PHASE 3: CATASTROPHE ANALYSIS
+============================================================ 
+Applying catastrophe corrections...
+📊 [PHASE_3_CATASTROPHE] Row count: 4883051
+✅ CHECKPOINT [CATASTROPHE_CORRECTIONS]: Applied 44 catastrophe corrections
+[1] TRUE
+🗑️ Removed checkpoint: phase2_loaded
+
+✅ PHASE 3 COMPLETE: Catastrophe analysis
+
+ ============================================================ 
+PHASE 4: DATA DRIFTING CORRECTION (IPC)
+============================================================ 
+Deflating 73 monetary columns...
+✅ CHECKPOINT [IPC_DEFLATION]: IPC deflation applied correctly (ratio=1.9903, expected=1.9903)
+[1] TRUE
+📊 [PHASE_4_IPC] Row count: 4883051
+
+✅ PHASE 4 COMPLETE: Data drifting correction
+
+ ============================================================ 
+PHASE 5: INTRA-MONTH FEATURE ENGINEERING
+============================================================ 
+Creating banking-specific features...
+Handling infinite/NaN values...
+   Replaced 34 Inf and 5402 NaN values with NA
+✅ CHECKPOINT [FE_INTRA_FEATURES]: Created 65 intra-month features (expected >=30)
+[1] TRUE
+📊 [PHASE_5_FE_INTRA] Row count: 4883051
+✅ FE_INTRA complete: 155 -> 220 columns (+65)
+Removing redundant Visa/Master columns (only those consolidated via sum)...
+✅ Removed 40 consolidated Visa/Master columns
+   Kept 4 Visa/Master columns with independent predictive value
+💾 Checkpoint saved: phase5_fe_intra (1248.0 MB)
+[1] "/dev/shm/checkpoint_phase5_fe_intra_exp2000.rds"
+
+✅ PHASE 5 COMPLETE: Intra-month feature engineering
+
+ ============================================================ 
+PHASE 6: TEMPORAL FEATURE ENGINEERING (FEhist)
+============================================================ 
+Indices: <foto_mes>, <cliente_antiguedad>
+         numero_de_cliente foto_mes active_quarter cliente_vip internet
+                     <int>    <int>          <int>       <int>    <int>
+      1:          29183733   201901              1           0        1
+      2:          29183733   201902              1           0        1
+      3:          29183733   201903              1           0        1
+      4:          29183733   201904              1           0        1
+      5:          29183733   201905              1           0        1
+     ---                                                               
+4883047:         188115120   202109              1           0        0
+4883048:         188116871   202109              1           0        0
+4883049:         188122277   202109              1           0        0
+4883050:         188128903   202109              0           0        0
+4883051:         188136205   202109              0           0        0
+         cliente_edad cliente_antiguedad mrentabilidad mrentabilidad_annual
+                <int>              <int>         <num>                <num>
+      1:           44                 69     171.82287          29078.34802
+      2:           44                 70     821.16301          25823.07045
+      3:           44                 71    2131.94485          22543.09742
+      4:           44                 72    5859.65515          25693.27100
+      5:           44                 73    4485.07529          26979.53409
+     ---                                                                   
+4883047:           48                  1      76.83765             76.83765
+4883048:           30                  1     276.60254            276.60254
+4883049:           23                  1      88.69379             88.69379
+4883050:           31                  1       0.00000              0.00000
+4883051:           54                  1       0.00000              0.00000
+         mcomisiones mactivos_margen mpasivos_margen cproductos tcuentas
+               <num>           <num>           <num>      <int>    <int>
+      1:  1245.63119      -649.87376      -265.56614         11        1
+      2:   840.43328       -26.57572        10.14326         11        1
+      3:   970.08211       108.75253       881.74812         11        1
+      4:  1030.31287      1614.47891      2502.60630         11        1
+      5:  1275.64333     -1118.63101      3854.71955         11        1
+     ---                                                                
+4883047:    32.49436       -10.62218        48.42763          6        1
+4883048:     0.00000      -154.54845       390.35805          7        1
+4883049:     0.00000      -121.67885       197.29697          7        1
+4883050:     0.00000         0.00000         0.00000          8        2
+4883051:     0.00000         0.00000         0.00000          6        2
+         ccuenta_corriente mcuenta_corriente_adicional mcuenta_corriente
+                     <int>                       <num>             <num>
+      1:                 1                           0         -9254.750
+      2:                 1                           0        -12086.988
+      3:                 1                           0        -11708.041
+      4:                 1                           0         -3778.038
+      5:                 1                           0         -4532.392
+     ---                                                                
+4883047:                 1                           0             0.000
+4883048:                 1                           0             0.000
+4883049:                 1                           0             0.000
+4883050:                 1                           0             0.000
+4883051:                 1                           0             0.000
+         ccaja_ahorro mcaja_ahorro mcaja_ahorro_adicional mcaja_ahorro_dolares
+                <int>        <num>                  <num>                <num>
+      1:            2    4198.6041                      0                    0
+      2:            2       0.0000                      0                    0
+      3:            2       0.0000                      0                    0
+      4:            2     954.8588                      0                    0
+      5:            2       0.0000                      0                    0
+     ---                                                                      
+4883047:            2    3313.6235                      0                    0
+4883048:            2   17803.8051                      0                    0
+4883049:            2    5643.0280                      0                    0
+4883050:            2       0.0000                      0                    0
+4883051:            2       0.0000                      0                    0
+         cdescubierto_preacordado mcuentas_saldo ctarjeta_debito
+                            <int>          <num>           <int>
+      1:                        1  -1.361690e+04               1
+      2:                        1  -1.345522e+04               1
+      3:                        1  -1.206754e+04               1
+      4:                        1  -8.176906e+02               1
+      5:                        1  -6.125615e+03               1
+     ---                                                        
+4883047:                        1   6.934583e+03               1
+4883048:                        1   6.494542e-02               2
+4883049:                        1   2.327752e+04               1
+4883050:                        1   0.000000e+00               1
+4883051:                        1   0.000000e+00               1
+         ctarjeta_debito_transacciones mautoservicio ctarjeta_visa
+                                 <int>         <num>         <int>
+      1:                             0         0.000             1
+      2:                             0         0.000             1
+      3:                             0         0.000             1
+      4:                             2      4575.110             1
+      5:                             0         0.000             1
+     ---                                                          
+4883047:                             5      4250.468             1
+4883048:                             0         0.000             1
+4883049:                             0         0.000             1
+4883050:                             0         0.000             1
+4883051:                             0         0.000             1
+         ctarjeta_visa_transacciones mtarjeta_visa_consumo ctarjeta_master
+                               <int>                 <num>           <int>
+      1:                          10            22552.0248               1
+      2:                           9            14163.7292               1
+      3:                          15            59811.5696               1
+      4:                          17            34574.1549               1
+      5:                          14            29066.2815               1
+     ---                                                                  
+4883047:                           1              409.6829               1
+4883048:                           5            18209.3459               1
+4883049:                           0                0.0000               1
+4883050:                           0                0.0000               1
+4883051:                           0                0.0000               1
+         ctarjeta_master_transacciones mtarjeta_master_consumo
+                                 <int>                   <num>
+      1:                            14              26628.5238
+      2:                            25              58332.5814
+      3:                            15              27771.5621
+      4:                            18              30378.7081
+      5:                            12              25947.8261
+     ---                                                      
+4883047:                             1                253.9366
+4883048:                             0                  0.0000
+4883049:                             0                  0.0000
+4883050:                             0                  0.0000
+4883051:                             0                  0.0000
+         cprestamos_personales mprestamos_personales cprestamos_prendarios
+                         <int>                 <num>                 <int>
+      1:                     3              169424.3                     0
+      2:                     3              156229.9                     0
+      3:                     3              142226.3                     0
+      4:                     3              131005.3                     0
+      5:                     3              120402.3                     0
+     ---                                                                  
+4883047:                     0                   0.0                     0
+4883048:                     0                   0.0                     0
+4883049:                     0                   0.0                     0
+4883050:                     0                   0.0                     0
+4883051:                     0                   0.0                     0
+         mprestamos_prendarios cprestamos_hipotecarios mprestamos_hipotecarios
+                         <num>                   <int>                   <num>
+      1:                     0                       0                       0
+      2:                     0                       0                       0
+      3:                     0                       0                       0
+      4:                     0                       0                       0
+      5:                     0                       0                       0
+     ---                                                                      
+4883047:                     0                       0                       0
+4883048:                     0                       0                       0
+4883049:                     0                       0                       0
+4883050:                     0                       0                       0
+4883051:                     0                       0                       0
+         cplazo_fijo mplazo_fijo_dolares mplazo_fijo_pesos cinversion1
+               <int>               <num>             <num>       <int>
+      1:           0                   0                 0           0
+      2:           0                   0                 0           0
+      3:           0                   0                 0           0
+      4:           0                   0                 0           0
+      5:           0                   0                 0           0
+     ---                                                              
+4883047:           0                   0                 0           0
+4883048:           0                   0                 0           0
+4883049:           0                   0                 0           0
+4883050:           0                   0                 0           0
+4883051:           0                   0                 0           0
+         minversion1_pesos minversion1_dolares cinversion2 minversion2
+                     <num>               <num>       <int>       <num>
+      1:                 0                   0           0           0
+      2:                 0                   0           0           0
+      3:                 0                   0           0           0
+      4:                 0                   0           0           0
+      5:                 0                   0           0           0
+     ---                                                              
+4883047:                 0                   0           0           0
+4883048:                 0                   0           0           0
+4883049:                 0                   0           0           0
+4883050:                 0                   0           0           0
+4883051:                 0                   0           0           0
+         cseguro_vida cseguro_auto cseguro_vivienda
+                <int>        <int>            <int>
+      1:            2            0                1
+      2:            2            0                1
+      3:            2            0                1
+      4:            2            0                1
+      5:            2            0                1
+     ---                                           
+4883047:            0            0                0
+4883048:            0            0                0
+4883049:            0            0                0
+4883050:            1            0                0
+4883051:            0            0                0
+         cseguro_accidentes_personales ccaja_seguridad cpayroll_trx  mpayroll
+                                 <int>           <int>        <int>     <num>
+      1:                             0               0            1  98171.00
+      2:                             0               0            1  91448.48
+      3:                             0               0            1  89200.11
+      4:                             0               0            1 100567.15
+      5:                             0               0            1 100387.93
+     ---                                                                     
+4883047:                             0               0            0      0.00
+4883048:                             0               0            3  46626.88
+4883049:                             0               0            1      0.00
+4883050:                             0               0            0      0.00
+4883051:                             0               0            0      0.00
+         mpayroll2 cpayroll2_trx ccuenta_debitos_automaticos
+             <num>         <int>                       <int>
+      1:         0             0                           1
+      2:         0             0                           1
+      3:         0             0                           1
+      4:         0             0                           1
+      5:         0             0                           1
+     ---                                                    
+4883047:         0             0                           0
+4883048:         0             0                           0
+4883049:         0             0                           0
+4883050:         0             0                           0
+4883051:         0             0                           0
+         mcuenta_debitos_automaticos ctarjeta_visa_debitos_automaticos
+                               <num>                             <int>
+      1:                    137.5697                                 2
+      2:                    132.5335                                 1
+      3:                    126.4632                                 2
+      4:                    122.5419                                 2
+      5:                    178.4247                                 1
+     ---                                                              
+4883047:                      0.0000                                 0
+4883048:                      0.0000                                 0
+4883049:                      0.0000                                 0
+4883050:                      0.0000                                 0
+4883051:                      0.0000                                 0
+         mttarjeta_visa_debitos_automaticos ctarjeta_master_debitos_automaticos
+                                      <num>                               <int>
+      1:                           9542.070                                   3
+      2:                           1207.796                                   2
+      3:                           8771.704                                   3
+      4:                           4837.338                                   4
+      5:                           1140.740                                   2
+     ---                                                                       
+4883047:                              0.000                                   0
+4883048:                              0.000                                   0
+4883049:                              0.000                                   0
+4883050:                              0.000                                   0
+4883051:                              0.000                                   0
+         mttarjeta_master_debitos_automaticos cpagodeservicios mpagodeservicios
+                                        <num>            <int>            <num>
+      1:                             5198.413                0                0
+      2:                             2155.433                0                0
+      3:                             4868.121                0                0
+      4:                             5481.605                0                0
+      5:                             4663.913                0                0
+     ---                                                                       
+4883047:                                0.000                0                0
+4883048:                                0.000                0                0
+4883049:                                0.000                0                0
+4883050:                                0.000                0                0
+4883051:                                0.000                0                0
+         cpagomiscuentas mpagomiscuentas ccajeros_propios_descuentos
+                   <int>           <num>                       <int>
+      1:               0               0                           0
+      2:               0               0                           0
+      3:               0               0                           0
+      4:               0               0                           0
+      5:               0               0                           0
+     ---                                                            
+4883047:               0               0                           0
+4883048:               0               0                           0
+4883049:               0               0                           0
+4883050:               0               0                           0
+4883051:               0               0                           0
+         mcajeros_propios_descuentos ctarjeta_visa_descuentos
+                               <num>                    <int>
+      1:                           0                        0
+      2:                           0                        0
+      3:                           0                        0
+      4:                           0                        0
+      5:                           0                        1
+     ---                                                     
+4883047:                           0                        0
+4883048:                           0                        0
+4883049:                           0                        0
+4883050:                           0                        0
+4883051:                           0                        0
+         mtarjeta_visa_descuentos ctarjeta_master_descuentos
+                            <num>                      <int>
+      1:                        0                          0
+      2:                        0                          0
+      3:                        0                          0
+      4:                        0                          0
+      5:                        0                          2
+     ---                                                    
+4883047:                        0                          0
+4883048:                        0                          0
+4883049:                        0                          0
+4883050:                        0                          0
+4883051:                        0                          0
+         mtarjeta_master_descuentos ccomisiones_mantenimiento
+                              <num>                     <int>
+      1:                          0                         0
+      2:                          0                         0
+      3:                          0                         0
+      4:                          0                         0
+      5:                          0                         0
+     ---                                                     
+4883047:                          0                         0
+4883048:                          0                         0
+4883049:                          0                         0
+4883050:                          0                         0
+4883051:                          0                         0
+         mcomisiones_mantenimiento ccomisiones_otras mcomisiones_otras cforex
+                             <num>             <int>             <num>  <int>
+      1:                         0                10        1245.63119      0
+      2:                         0                10         840.43328      0
+      3:                         0                12         970.08211      0
+      4:                         0                14        1030.31287      0
+      5:                         0                13        1275.64333      0
+     ---                                                                     
+4883047:                         0                 6          32.49436      0
+4883048:                         0                 0           0.00000      0
+4883049:                         0                 0           0.00000      0
+4883050:                         0                 0           0.00000      0
+4883051:                         0                 0           0.00000      0
+         cforex_buy mforex_buy cforex_sell mforex_sell
+              <int>      <num>       <int>       <num>
+      1:          0          0           0           0
+      2:          0          0           0           0
+      3:          0          0           0           0
+      4:          0          0           0           0
+      5:          0          0           0           0
+     ---                                              
+4883047:          0          0           0           0
+4883048:          0          0           0           0
+4883049:          0          0           0           0
+4883050:          0          0           0           0
+4883051:          0          0           0           0
+         ctransferencias_recibidas mtransferencias_recibidas
+                             <int>                     <num>
+      1:                         0                     0.000
+      2:                         0                     0.000
+      3:                         0                     0.000
+      4:                         0                     0.000
+      5:                         0                     0.000
+     ---                                                    
+4883047:                         2                  9703.762
+4883048:                         3                 46555.041
+4883049:                         0                     0.000
+4883050:                         0                     0.000
+4883051:                         0                     0.000
+         ctransferencias_emitidas mtransferencias_emitidas
+                            <int>                    <num>
+      1:                        1                 4669.251
+      2:                        0                    0.000
+      3:                        0                    0.000
+      4:                        0                    0.000
+      5:                        0                    0.000
+     ---                                                  
+4883047:                        1                15193.872
+4883048:                        5                88898.963
+4883049:                        1                29625.935
+4883050:                        0                    0.000
+4883051:                        0                    0.000
+         cextraccion_autoservicio mextraccion_autoservicio ccheques_depositados
+                            <int>                    <num>                <int>
+      1:                        0                    0.000                    0
+      2:                        0                    0.000                    0
+      3:                        0                    0.000                    0
+      4:                        0                    0.000                    0
+      5:                        0                    0.000                    0
+     ---                                                                       
+4883047:                        1                 1692.911                    0
+4883048:                        0                    0.000                    0
+4883049:                        0                    0.000                    0
+4883050:                        0                    0.000                    0
+4883051:                        0                    0.000                    0
+         mcheques_depositados ccheques_emitidos mcheques_emitidos
+                        <num>             <int>             <num>
+      1:                    0                 0                 0
+      2:                    0                 0                 0
+      3:                    0                 0                 0
+      4:                    0                 0                 0
+      5:                    0                 0                 0
+     ---                                                         
+4883047:                    0                 0                 0
+4883048:                    0                 0                 0
+4883049:                    0                 0                 0
+4883050:                    0                 0                 0
+4883051:                    0                 0                 0
+         ccheques_depositados_rechazados mcheques_depositados_rechazados
+                                   <int>                           <num>
+      1:                               0                               0
+      2:                               0                               0
+      3:                               0                               0
+      4:                               0                               0
+      5:                               0                               0
+     ---                                                                
+4883047:                               0                               0
+4883048:                               0                               0
+4883049:                               0                               0
+4883050:                               0                               0
+4883051:                               0                               0
+         ccheques_emitidos_rechazados mcheques_emitidos_rechazados tcallcenter
+                                <int>                        <num>       <int>
+      1:                            0                            0           0
+      2:                            0                            0           0
+      3:                            0                            0           0
+      4:                            0                            0           1
+      5:                            0                            0           0
+     ---                                                                      
+4883047:                            0                            0           0
+4883048:                            0                            0           0
+4883049:                            0                            0           0
+4883050:                            0                            0           0
+4883051:                            0                            0           0
+         ccallcenter_transacciones thomebanking chomebanking_transacciones
+                             <int>        <int>                      <int>
+      1:                         0            1                         12
+      2:                         0            0                          0
+      3:                         0            1                          5
+      4:                         2            0                          0
+      5:                         0            0                          0
+     ---                                                                  
+4883047:                         0            1                         17
+4883048:                         0            1                         21
+4883049:                         0            1                          9
+4883050:                         0            1                          0
+4883051:                         0            0                          0
+         ccajas_transacciones ccajas_consultas ccajas_depositos
+                        <int>            <int>            <int>
+      1:                    0                0                0
+      2:                    0                0                0
+      3:                    0                0                0
+      4:                    0                0                0
+      5:                    0                0                0
+     ---                                                       
+4883047:                    0                0                0
+4883048:                    0                0                0
+4883049:                    0                0                0
+4883050:                    0                0                0
+4883051:                    0                0                0
+         ccajas_extracciones ccajas_otras catm_trx     matm catm_trx_other
+                       <int>        <int>    <int>    <num>          <int>
+      1:                   0            0        0    0.000              0
+      2:                   0            0        0    0.000              0
+      3:                   0            0        0    0.000              0
+      4:                   0            0        0    0.000              0
+      5:                   0            0        0    0.000              0
+     ---                                                                  
+4883047:                   0            0        1 1692.911              0
+4883048:                   0            0        0    0.000              0
+4883049:                   0            0        0    0.000              0
+4883050:                   0            0        0    0.000              0
+4883051:                   0            0        0    0.000              0
+         matm_other ctrx_quarter tmobile_app cmobile_app_trx Master_delinquency
+              <num>        <int>       <int>           <int>              <int>
+      1:          0           95          NA              NA                  0
+      2:          0          105          NA              NA                  0
+      3:          0           96          NA              NA                  0
+      4:          0          116          NA              NA                  0
+      5:          0          105          NA              NA                  0
+     ---                                                                       
+4883047:          0           20           0               1                  0
+4883048:          0           19           0               1                  0
+4883049:          0            5           0               1                  0
+4883050:          0            2           0               1                  0
+4883051:          0            2           0               0                  0
+         Master_status Visa_delinquency Visa_status clase_ternaria  kmes
+                 <int>            <int>       <int>         <char> <num>
+      1:             0                0           0       CONTINUA     1
+      2:             0                0           0       CONTINUA     2
+      3:             0                1           0       CONTINUA     3
+      4:             0                0           0       CONTINUA     4
+      5:             0                0           0       CONTINUA     5
+     ---                                                                
+4883047:             0                0           0                    9
+4883048:             0                0           0                    9
+4883049:             0                0           0                    9
+4883050:             0                0           0                    9
+4883051:             0                0           0                    9
+         ctrx_quarter_normalizado mpayroll_sobre_edad vm_status01 vm_status02
+                            <num>               <num>       <int>       <int>
+      1:                       95            2231.159           0           0
+      2:                      105            2078.375           0           0
+      3:                       96            2027.275           0           0
+      4:                      116            2285.617           0           0
+      5:                      105            2281.544           0           0
+     ---                                                                     
+4883047:                      100               0.000           0           0
+4883048:                       95            1554.229           0           0
+4883049:                       25               0.000           0           0
+4883050:                       10               0.000           0           0
+4883051:                       10               0.000           0           0
+         vm_status03 vm_status04 vm_status05 vm_status06 mv_status07
+               <int>       <int>       <int>       <int>       <int>
+      1:           0           0           0           0           0
+      2:           0           0           0           0           0
+      3:           0           0           0           0           0
+      4:           0           0           0           0           0
+      5:           0           0           0           0           0
+     ---                                                            
+4883047:           0           0           0           0           0
+4883048:           0           0           0           0           0
+4883049:           0           0           0           0           0
+4883050:           0           0           0           0           0
+4883051:           0           0           0           0           0
+         vm_mfinanciacion_limite vm_msaldototal vm_msaldopesos vm_msaldodolares
+                           <num>          <num>          <num>            <num>
+      1:               100855.82     84101.5905     94953.7977         175.4850
+      2:                97163.61     71679.1551     71652.8094        2260.9306
+      3:               231783.41    121977.4741    130427.7143         532.9862
+      4:               224596.33    133576.8061    136615.5332        6160.7799
+      5:               218054.69    100325.3463    106856.6766        1081.4951
+     ---                                                                       
+4883047:               255968.08       610.4364       671.5789           0.0000
+4883048:               383952.12      9772.9938     11463.7179           0.0000
+4883049:               788221.69         0.0000         0.0000           0.0000
+4883050:               806663.61         0.0000         0.0000           0.0000
+4883051:               676955.57         0.0000         0.0000           0.0000
+         vm_mconsumospesos vm_mconsumosdolares vm_mlimitecompra
+                     <num>               <num>            <num>
+      1:        18092.2531           0.2985455         112062.0
+      2:        38080.4613          52.4419937         107959.6
+      3:        64298.7093          18.2412980         257537.1
+      4:        37381.2898         130.5553469         249551.5
+      5:        18342.4021          19.1919245         242283.0
+     ---                                                       
+4883047:          409.6829           0.0000000         284409.0
+4883048:                NA                  NA         426613.5
+4883049:                NA                  NA         885227.2
+4883050:                NA                  NA         896422.9
+4883051:                NA                  NA         752172.9
+         vm_madelantopesos vm_madelantodolares vm_mpagado vm_mpagospesos
+                     <num>               <num>      <num>          <num>
+      1:                 0                   0          0      -85617.11
+      2:                 0                   0          0      -91650.77
+      3:                 0                   0          0      -31693.08
+      4:                 0                   0          0      -57854.35
+      5:                 0                   0          0      -90856.12
+     ---                                                                
+4883047:                 0                   0          0           0.00
+4883048:                NA                  NA          0             NA
+4883049:                NA                  NA          0             NA
+4883050:                NA                  NA          0             NA
+4883051:                NA                  NA          0             NA
+         vm_mpagosdolares vm_mconsumototal vm_cconsumos vm_cadelantosefectivo
+                    <num>            <num>        <int>                 <int>
+      1:          0.00000       18092.2531           10                     0
+      2:          0.00000       38080.4613           19                     0
+      3:         43.72789       64298.7093           19                     0
+      4:          0.00000       37381.2898           23                     0
+      5:          0.00000       18342.4021           11                     0
+     ---                                                                     
+4883047:          0.00000         409.6829            1                     0
+4883048:               NA               NA           NA                    NA
+4883049:               NA               NA           NA                    NA
+4883050:               NA               NA           NA                    NA
+4883051:               NA               NA           NA                    NA
+         vm_mpagominimo vm_Fvencimiento vm_Finiciomora vm_fultimo_cierre
+                  <num>           <int>          <int>             <int>
+      1:    24326.79794           -1580             NA                 8
+      2:    13112.58843           -1552             NA                 8
+      3:    38244.26268           -1521              0                11
+      4:    15867.31463           -1491             NA                 6
+      5:    11225.77833           -1460             NA                 9
+     ---                                                                
+4883047:       25.39366           -2190             NA                 8
+4883048:        0.00000           -2190             NA                 1
+4883049:        0.00000           -2190             NA                 8
+4883050:        0.00000           -2190             NA                 1
+4883051:        0.00000           -2190             NA                 1
+         vm_fechaalta vm_utilization vm_payment_ratio vm_spend_intensity
+                <int>          <num>            <num>              <num>
+      1:         2083    0.750484742                0        0.161447124
+      2:         2111    0.663938330                0        0.352725669
+      3:         2142    0.473628809                0        0.249666763
+      4:         2172    0.535265403                0        0.149793304
+      5:         2203    0.414081624                0        0.075706209
+     ---                                                                
+4883047:           25    0.002146326                0        0.001440466
+4883048:           15    0.022908257                0                 NA
+4883049:           16    0.000000000                0                 NA
+4883050:           11    0.000000000                0                 NA
+4883051:            1    0.000000000                0                 NA
+         vm_cash_vs_purchase fe_digital_engagement fe_branch_dependency
+                       <num>                 <int>                <int>
+      1:                   0                   119                    0
+      2:                   0                   139                    0
+      3:                   0                   126                    0
+      4:                   0                   153                    0
+      5:                   0                   131                    0
+     ---                                                               
+4883047:                   0                    27                    0
+4883048:                  NA                    24                    0
+4883049:                  NA                     5                    0
+4883050:                  NA                     2                    0
+4883051:                  NA                     2                    0
+         fe_remote_service fe_channel_shift fe_liquid_assets fe_fixed_deposits
+                     <int>            <num>            <num>             <num>
+      1:                12              119        -5056.146                 0
+      2:                 0              139       -12086.988                 0
+      3:                 5              126       -11708.041                 0
+      4:                 2              153        -2823.180                 0
+      5:                 0              131        -4532.392                 0
+     ---                                                                      
+4883047:                17               27         3313.623                 0
+4883048:                21               24        17803.805                 0
+4883049:                 9                5         5643.028                 0
+4883050:                 0                2            0.000                 0
+4883051:                 0                2            0.000                 0
+         fe_liquidity_ratio fe_total_debt fe_debt_service_ratio
+                      <num>         <num>                 <num>
+      1:          -5056.146      169424.3             980.33481
+      2:         -12086.988      156229.9             190.02302
+      3:         -11708.041      142226.3              66.68073
+      4:          -2823.180      131005.3              22.35335
+      5:          -4532.392      120402.3              26.83911
+     ---                                                       
+4883047:           3313.623           0.0               0.00000
+4883048:          17803.805           0.0               0.00000
+4883049:           5643.028           0.0               0.00000
+4883050:              0.000           0.0               0.00000
+4883051:              0.000           0.0               0.00000
+         fe_avg_transaction fe_cash_drain fe_check_activity fe_transfer_balance
+                      <num>         <num>             <num>               <num>
+      1:           1967.222     0.0000000                 0           -4669.251
+      2:           2071.323     0.0000000                 0               0.000
+      3:           2825.262     0.0000000                 0               0.000
+      4:           1931.333     0.0000000                 0               0.000
+      5:           2037.560     0.0000000                 0               0.000
+     ---                                                                       
+4883047:           1638.029     0.5107399                 0           -5490.110
+4883048:           3034.891     0.0000000                 0          -42343.922
+4883049:              0.000     0.0000000                 0          -29625.935
+4883050:              0.000     0.0000000                 0               0.000
+4883051:              0.000     0.0000000                 0               0.000
+         fe_product_concentration fe_insurance_penetration
+                            <num>                    <num>
+      1:               0.09722222                0.2500000
+      2:               0.09722222                0.2500000
+      3:               0.09722222                0.2500000
+      4:               0.09722222                0.2500000
+      5:               0.09722222                0.2500000
+     ---                                                  
+4883047:               0.10204082                0.0000000
+4883048:               0.07812500                0.0000000
+4883049:               0.07812500                0.0000000
+4883050:               0.09876543                0.1111111
+4883051:               0.16326531                0.0000000
+         fe_investment_sophistication fe_loan_diversity fe_crosssell_gap
+                                <num>             <int>            <num>
+      1:                            0                 1                4
+      2:                            0                 1                4
+      3:                            0                 1                4
+      4:                            0                 1                4
+      5:                            0                 1                4
+     ---                                                                
+4883047:                            0                 0                9
+4883048:                            0                 0                8
+4883049:                            0                 0                8
+4883050:                            0                 0                7
+4883051:                            0                 0                9
+         fe_flag_monoproduct fe_profit_per_product fe_profitability_trend
+                       <int>                 <num>                  <num>
+      1:                   0              14.31857             0.07090511
+      2:                   0              68.43025             0.38158028
+      3:                   0             177.66207             1.13481315
+      4:                   0             488.30460             2.73663579
+      5:                   0             373.75627             1.99480497
+     ---                                                                 
+4883047:                   0              10.97681            11.84583295
+4883048:                   0              34.57532            11.95677273
+4883049:                   0              11.08672            11.86621148
+4883050:                   0               0.00000             0.00000000
+4883051:                   0               0.00000             0.00000000
+         fe_fee_burden fe_npv_proxy fe_tenure_years fe_flag_early_lifecycle
+                 <num>        <num>           <num>                   <int>
+      1:    14.4151202 1.672005e+05      5.75000000                       0
+      2:     2.0444444 1.506346e+05      5.83333333                       0
+      3:     0.9096176 1.333800e+05      5.91666667                       0
+      4:     0.3516033 1.541596e+05      6.00000000                       0
+      5:     0.5687124 1.641255e+05      6.08333333                       0
+     ---                                                                   
+4883047:     0.8349265 6.403137e+00      0.08333333                       1
+4883048:     0.0000000 2.305021e+01      0.08333333                       1
+4883049:     0.0000000 7.391149e+00      0.08333333                       1
+4883050:     0.0000000 0.000000e+00      0.08333333                       1
+4883051:     0.0000000 0.000000e+00      0.08333333                       1
+         fe_vip_tenure fe_card_maturity fe_flag_card_closing fe_flag_delinquent
+                 <num>            <int>                <int>              <int>
+      1:             0             2083                    0                  0
+      2:             0             2111                    0                  0
+      3:             0             2142                    0                  1
+      4:             0             2172                    0                  0
+      5:             0             2203                    0                  0
+     ---                                                                       
+4883047:             0               25                    0                  0
+4883048:             0               15                    0                  0
+4883049:             0               16                    0                  0
+4883050:             0               11                    0                  0
+4883051:             0                1                    0                  0
+         fe_flag_early_delinquency fe_bounced_check_ratio
+                             <int>                  <num>
+      1:                        NA                      0
+      2:                        NA                      0
+      3:                         0                      0
+      4:                        NA                      0
+      5:                        NA                      0
+     ---                                                 
+4883047:                        NA                      0
+4883048:                        NA                      0
+4883049:                        NA                      0
+4883050:                        NA                      0
+4883051:                        NA                      0
+✅ Pre-allocated column slots: 180 -> 2180
+Pre-computing customer grouping structure...
+✅ 186563 unique customers
+   Months per customer: min=1, median=33, max=33
+
+PRIORITY 1: Critical temporal features...
+✅ Priority 1 complete
+
+PRIORITY 2: Medium-value temporal features...
+✅ Priority 2 complete
+
+PRIORITY 3: Low-priority temporal features...
+✅ Priority 3 complete
+Final cleanup of infinite values...
+             used    (Mb) gc trigger    (Mb)   max used    (Mb)
+Ncells    2419347   129.3    4904618   262.0    4904618   262.0
+Vcells 3091265293 23584.5 5003396343 38172.9 4168574015 31803.7
+✅ CHECKPOINT [FE_HIST_FEATURES]: Created 547 temporal features (expected >=100)
+[1] TRUE
+📊 [PHASE_6_FE_HIST] Row count: 4883051
+✅ FEhist complete: 180 -> 727 columns (+547 temporal features)
+🗑️ Removed checkpoint: phase5_fe_intra
+💾 Checkpoint saved: phase6_fe_hist (6524.6 MB)
+[1] "/dev/shm/checkpoint_phase6_fe_hist_exp2000.rds"
+
+✅ PHASE 6 COMPLETE: Temporal feature engineering
+
+ ============================================================ 
+PHASE 7: FEATURE VALIDATION
+============================================================ 
+
+📊 Feature Type Breakdown:
+   lag: 188
+   delta: 188
+   tendencia: 68
+   promedio: 53
+   minimo: 8
+   maximo: 33
+   ratioavg: 0
+   ratiomax: 9
+   fe_intra: 171
+✅ CHECKPOINT [LAG_FEATURES]: Lag features: 188 (expected >=50)
+[1] TRUE
+✅ CHECKPOINT [DELTA_FEATURES]: Delta features: 188 (expected >=50)
+[1] TRUE
+📊 [PHASE_7_VALIDATION] Row count: 4883051
+
+📊 Final Dataset: 4883051 rows x 727 columns
+
+✅ PHASE 7 COMPLETE: Feature validation
+
+ ============================================================ 
+PHASE 8: RFFE (STRUCTURE DISCOVERY)
+============================================================ 
+Feature columns for RFFE: 724
+Checking for Infinite values...
+   - RFFE train split: 3410101 rows
+   - RFFE apply split: 1472950 rows
+✅ CHECKPOINT [RFFE_SPLIT_SUM]: RFFE split sums to total: 3410101 + 1472950 = 4883051
+[1] TRUE
+
+📊 RFFE Calibration:
+   - BAJA+2 Prevalence: 0.4044%
+   - Optimal Nodesize: 15 (Lift 15.7x)
+   - Optimal Trees: 280 (Coverage 278.5)
+Training Ranger Model...
+Growing trees.. Progress: 0%. Estimated remaining time: 17 hours, 12 minutes, 18 seconds.
+Growing trees.. Progress: 1%. Estimated remaining time: 6 hours, 33 minutes, 57 seconds.
+Growing trees.. Progress: 4%. Estimated remaining time: 2 hours, 9 minutes, 9 seconds.
+Growing trees.. Progress: 9%. Estimated remaining time: 54 minutes, 13 seconds.
+Growing trees.. Progress: 11%. Estimated remaining time: 58 minutes, 54 seconds.
+Growing trees.. Progress: 12%. Estimated remaining time: 59 minutes, 52 seconds.
+Growing trees.. Progress: 12%. Estimated remaining time: 1 hour, 2 minutes, 13 seconds.
+Growing trees.. Progress: 15%. Estimated remaining time: 53 minutes, 49 seconds.
+Growing trees.. Progress: 19%. Estimated remaining time: 42 minutes, 15 seconds.
+Growing trees.. Progress: 21%. Estimated remaining time: 38 minutes, 41 seconds.
+Growing trees.. Progress: 22%. Estimated remaining time: 43 minutes, 39 seconds.
+Growing trees.. Progress: 23%. Estimated remaining time: 44 minutes, 16 seconds.
+Growing trees.. Progress: 25%. Estimated remaining time: 40 minutes, 13 seconds.
+Growing trees.. Progress: 28%. Estimated remaining time: 36 minutes, 56 seconds.
+Growing trees.. Progress: 31%. Estimated remaining time: 32 minutes, 26 seconds.
+Growing trees.. Progress: 33%. Estimated remaining time: 31 minutes, 59 seconds.
+Growing trees.. Progress: 33%. Estimated remaining time: 34 minutes, 11 seconds.
+Growing trees.. Progress: 34%. Estimated remaining time: 34 minutes, 22 seconds.
+Growing trees.. Progress: 36%. Estimated remaining time: 32 minutes, 11 seconds.
+Growing trees.. Progress: 38%. Estimated remaining time: 30 minutes, 14 seconds.
+Growing trees.. Progress: 41%. Estimated remaining time: 28 minutes, 4 seconds.
+Growing trees.. Progress: 43%. Estimated remaining time: 26 minutes, 38 seconds.
+Growing trees.. Progress: 44%. Estimated remaining time: 27 minutes, 7 seconds.
+Growing trees.. Progress: 45%. Estimated remaining time: 27 minutes, 50 seconds.
+Growing trees.. Progress: 48%. Estimated remaining time: 25 minutes, 23 seconds.
+Growing trees.. Progress: 51%. Estimated remaining time: 22 minutes, 56 seconds.
+Growing trees.. Progress: 53%. Estimated remaining time: 21 minutes, 34 seconds.
+Growing trees.. Progress: 55%. Estimated remaining time: 21 minutes, 5 seconds.
+Growing trees.. Progress: 55%. Estimated remaining time: 20 minutes, 55 seconds.
+Growing trees.. Progress: 56%. Estimated remaining time: 21 minutes, 9 seconds.
+Growing trees.. Progress: 58%. Estimated remaining time: 19 minutes, 48 seconds.
+Growing trees.. Progress: 61%. Estimated remaining time: 17 minutes, 45 seconds.
+Growing trees.. Progress: 63%. Estimated remaining time: 16 minutes, 51 seconds.
+Growing trees.. Progress: 66%. Estimated remaining time: 15 minutes, 28 seconds.
+Growing trees.. Progress: 66%. Estimated remaining time: 15 minutes, 31 seconds.
+Growing trees.. Progress: 66%. Estimated remaining time: 15 minutes, 32 seconds.
+Growing trees.. Progress: 67%. Estimated remaining time: 15 minutes, 28 seconds.
+Growing trees.. Progress: 68%. Estimated remaining time: 14 minutes, 58 seconds.
+Growing trees.. Progress: 72%. Estimated remaining time: 12 minutes, 54 seconds.
+Growing trees.. Progress: 74%. Estimated remaining time: 11 minutes, 35 seconds.
+Growing trees.. Progress: 76%. Estimated remaining time: 10 minutes, 47 seconds.
+Growing trees.. Progress: 77%. Estimated remaining time: 10 minutes, 18 seconds.
+Growing trees.. Progress: 78%. Estimated remaining time: 10 minutes, 4 seconds.
+Growing trees.. Progress: 78%. Estimated remaining time: 10 minutes, 3 seconds.
+Growing trees.. Progress: 80%. Estimated remaining time: 9 minutes, 10 seconds.
+Growing trees.. Progress: 82%. Estimated remaining time: 8 minutes, 6 seconds.
+Growing trees.. Progress: 85%. Estimated remaining time: 6 minutes, 30 seconds.
+Growing trees.. Progress: 87%. Estimated remaining time: 5 minutes, 54 seconds.
+Growing trees.. Progress: 88%. Estimated remaining time: 5 minutes, 15 seconds.
+Growing trees.. Progress: 89%. Estimated remaining time: 4 minutes, 51 seconds.
+Growing trees.. Progress: 91%. Estimated remaining time: 4 minutes, 1 seconds.
+Growing trees.. Progress: 93%. Estimated remaining time: 3 minutes, 11 seconds.
+Growing trees.. Progress: 96%. Estimated remaining time: 1 minute, 53 seconds.
+Growing trees.. Progress: 97%. Estimated remaining time: 1 minute, 15 seconds.
+Growing trees.. Progress: 98%. Estimated remaining time: 1 minute, 6 seconds.
+Growing trees.. Progress: 99%. Estimated remaining time: 38 seconds.
+Growing trees.. Progress: 100%. Estimated remaining time: 9 seconds.
+Computing prediction error.. Progress: 68%. Estimated remaining time: 15 seconds.
+Generating Features (Future)...
+Predicting.. Progress: 16%. Estimated remaining time: 2 minutes, 41 seconds.
+Predicting.. Progress: 32%. Estimated remaining time: 2 minutes, 10 seconds.
+Predicting.. Progress: 48%. Estimated remaining time: 1 minute, 39 seconds.
+Predicting.. Progress: 64%. Estimated remaining time: 1 minute, 8 seconds.
+Predicting.. Progress: 80%. Estimated remaining time: 38 seconds.
+Predicting.. Progress: 96%. Estimated remaining time: 6 seconds.
+Generating Features (History)...
+Predicting.. Progress: 4%. Estimated remaining time: 11 minutes, 32 seconds.
+Predicting.. Progress: 9%. Estimated remaining time: 11 minutes, 13 seconds.
+Predicting.. Progress: 13%. Estimated remaining time: 10 minutes, 37 seconds.
+Predicting.. Progress: 18%. Estimated remaining time: 9 minutes, 53 seconds.
+Predicting.. Progress: 23%. Estimated remaining time: 9 minutes, 21 seconds.
+Predicting.. Progress: 27%. Estimated remaining time: 8 minutes, 43 seconds.
+Predicting.. Progress: 32%. Estimated remaining time: 8 minutes, 11 seconds.
+Predicting.. Progress: 36%. Estimated remaining time: 7 minutes, 35 seconds.
+Predicting.. Progress: 41%. Estimated remaining time: 7 minutes, 5 seconds.
+Predicting.. Progress: 45%. Estimated remaining time: 6 minutes, 36 seconds.
+Predicting.. Progress: 51%. Estimated remaining time: 5 minutes, 47 seconds.
+Predicting.. Progress: 56%. Estimated remaining time: 5 minutes, 1 seconds.
+Predicting.. Progress: 61%. Estimated remaining time: 4 minutes, 26 seconds.
+Predicting.. Progress: 67%. Estimated remaining time: 3 minutes, 42 seconds.
+Predicting.. Progress: 73%. Estimated remaining time: 3 minutes, 1 seconds.
+Predicting.. Progress: 79%. Estimated remaining time: 2 minutes, 18 seconds.
+Predicting.. Progress: 85%. Estimated remaining time: 1 minute, 37 seconds.
+Predicting.. Progress: 91%. Estimated remaining time: 59 seconds.
+Predicting.. Progress: 97%. Estimated remaining time: 18 seconds.
+Recombining Dataset...
+✅ CHECKPOINT [RFFE_ROW_INTEGRITY]: Row count after RFFE recombine: 4883051 (expected 4883051)
+[1] TRUE
+📊 [PHASE_8_RFFE] Row count: 4883051
+✅ CHECKPOINT [RFFE_TEST_MONTH_INTACT]: Test month 202109 rows after RFFE: 165093 (expected 165093)
+[1] TRUE
+🧹 Clearing RFFE Objects from RAM...
+             used    (Mb)  gc trigger     (Mb)    max used     (Mb)
+Ncells    2442536   130.5    30613278   1635.0    37412617   1998.1
+Vcells 3776675254 28813.8 20666021261 157669.3 25828931681 197059.2
+🗑️ Removed checkpoint: phase6_fe_hist
+^C  
+markjoyce86@instance-20251202-002153:~/WF2000$ free
+               total        used        free      shared  buff/cache   available
+Mem:       264128616   202852496    58884916     7630468    11677228    61276120
+Swap:              0           0           0
+markjoyce86@instance-20251202-002153:~/WF2000$ tail -f execution_log_v5.log
+✅ CHECKPOINT [RFFE_ROW_INTEGRITY]: Row count after RFFE recombine: 4883051 (expected 4883051)
+[1] TRUE
+📊 [PHASE_8_RFFE] Row count: 4883051
+✅ CHECKPOINT [RFFE_TEST_MONTH_INTACT]: Test month 202109 rows after RFFE: 165093 (expected 165093)
+[1] TRUE
+🧹 Clearing RFFE Objects from RAM...
+             used    (Mb)  gc trigger     (Mb)    max used     (Mb)
+Ncells    2442536   130.5    30613278   1635.0    37412617   1998.1
+Vcells 3776675254 28813.8 20666021261 157669.3 25828931681 197059.2
+🗑️ Removed checkpoint: phase6_fe_hist
+💾 Checkpoint saved: phase8_rffe (8128.8 MB)
+[1] "/dev/shm/checkpoint_phase8_rffe_exp2000.rds"
+
+✅ PHASE 8 COMPLETE: RFFE feature engineering
+
+ ============================================================ 
+PHASE 9: CANARITOS (FEATURE SELECTION)
+============================================================ 
+Feature columns for Canaritos: 1004
+   - Syncing Resolution: RFFE Nodesize 15 -> LGB Min Data 30
+Running 30 Rounds...
+   Round 10/30 complete
+   Round 20/30 complete
+   Round 30/30 complete
+             used    (Mb)  gc trigger    (Mb)    max used     (Mb)
+Ncells    2474020   132.2     8025088   428.6    37412617   1998.1
+Vcells 3929306387 29978.3 10581002887 80726.7 25828931681 197059.2
+📊 [PHASE_9_CANARITOS] Row count: 4883051
+
+✅ PHASE 9 COMPLETE: Canaritos feature importance
+
+ ============================================================ 
+PHASE 10: FEATURE SELECTION (PARETO)
+============================================================ 
+✅ CHECKPOINT [CANARITOS_SELECTION]: Canaritos selected 200 features
+[1] TRUE
+
+✅ FINAL FEATURE SELECTION: 200 Features.
+📊 [PHASE_10_SELECTION] Row count: 4883051
+🗑️ Removed checkpoint: phase8_rffe
+💾 Checkpoint saved: phase10_selected (8128.8 MB)
+[1] "/dev/shm/checkpoint_phase10_selected_exp2000.rds"
+
+✅ PHASE 10 COMPLETE: Feature selection
+
+ ============================================================ 
+PHASE 11: BAYESIAN OPTIMIZATION (PRODUCTION)
+============================================================ 
+
+[CHECKPOINT 1] Saving Phase 10 dataset state...
+💾 Checkpoint saved: phase10_selected (8128.8 MB)
+[1] "/dev/shm/checkpoint_phase10_selected_exp2000.rds"
+✅ Phase 10 checkpoint saved
+✅ CHECKPOINT [MONTH_VALIDATION_EXISTS]: Validation months 202105,202106,202107 found
+[1] TRUE
+✅ CHECKPOINT [MONTH_TESTING_EXISTS]: Testing month 202109 found
+[1] TRUE
+
+Features selected: 200
+✅ CHECKPOINT [TARGET_CREATED]: Target variable created for multiclass classification
+[1] TRUE
+BO training rows: 436040 (10% CONTINUA)
+Validation rows: 492826
+✅ CHECKPOINT [VALIDATION_HAS_BAJA2]: Validation BAJA+2 count: 3224
+[1] TRUE
+
+Profit parameters: G=$117,000, C=$3,000, Threshold=0.025
