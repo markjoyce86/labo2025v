@@ -1948,3 +1948,98 @@ Validation rows: 492826
 [1] TRUE
 
 Profit parameters: G=$117,000, C=$3,000, Threshold=0.025
+
+ ------------------------------------------------------------ 
+Starting Bayesian Optimization...
+Configuration: 8 iterations, 200 LGB rounds, 10% CONTINUA
+------------------------------------------------------------ 
+Computing y column(s) for design. Not provided.
+[mbo] 0: learning_rate=0.0468; num_leaves=412; min_data_in_leaf=73; feature_fraction=0.882; bagging_fraction=0.767; lambda_l1=4.88; lambda_l2=5.16 : y = 3e+03 : 61.6 secs : initdesign
+[mbo] 0: learning_rate=0.0439; num_leaves=90; min_data_in_leaf=56; feature_fraction=0.86; bagging_fraction=0.649; lambda_l1=4.16; lambda_l2=17.6 : y = 3e+03 : 28.0 secs : initdesign
+[mbo] 0: learning_rate=0.0336; num_leaves=269; min_data_in_leaf=119; feature_fraction=0.713; bagging_fraction=0.869; lambda_l1=7.61; lambda_l2=3.59 : y = 3e+03 : 41.3 secs : initdesign
+[mbo] 0: learning_rate=0.0724; num_leaves=172; min_data_in_leaf=20; feature_fraction=0.738; bagging_fraction=0.734; lambda_l1=2.59; lambda_l2=7.74 : y = 0 : 34.7 secs : initdesign
+[mbo] 0: learning_rate=0.0495; num_leaves=313; min_data_in_leaf=166; feature_fraction=0.924; bagging_fraction=0.926; lambda_l1=5.01; lambda_l2=17.9 : y = -1.26e+05 : 50.9 secs : initdesign
+[mbo] 0: learning_rate=0.0254; num_leaves=251; min_data_in_leaf=137; feature_fraction=0.812; bagging_fraction=0.829; lambda_l1=5.52; lambda_l2=11.6 : y = 0 : 42.1 secs : initdesign
+[mbo] 0: learning_rate=0.0593; num_leaves=295; min_data_in_leaf=117; feature_fraction=0.638; bagging_fraction=0.661; lambda_l1=1.85; lambda_l2=1.72 : y = -5.7e+04 : 42.6 secs : initdesign
+[mbo] 0: learning_rate=0.0227; num_leaves=120; min_data_in_leaf=12; feature_fraction=0.765; bagging_fraction=0.757; lambda_l1=6.45; lambda_l2=6.74 : y = 3e+03 : 28.7 secs : initdesign
+[mbo] 0: learning_rate=0.052; num_leaves=333; min_data_in_leaf=157; feature_fraction=0.698; bagging_fraction=0.8; lambda_l1=0.629; lambda_l2=9.12 : y = 3e+03 : 47.7 secs : initdesign
+[mbo] 0: learning_rate=0.0291; num_leaves=369; min_data_in_leaf=69; feature_fraction=0.626; bagging_fraction=0.853; lambda_l1=2.36; lambda_l2=15.2 : y = 3e+03 : 47.5 secs : initdesign
+[mbo] 0: learning_rate=0.0983; num_leaves=459; min_data_in_leaf=152; feature_fraction=0.963; bagging_fraction=0.914; lambda_l1=3.4; lambda_l2=4.34 : y = 3e+03 : 63.2 secs : initdesign
+[mbo] 0: learning_rate=0.0823; num_leaves=211; min_data_in_leaf=61; feature_fraction=0.903; bagging_fraction=0.7; lambda_l1=4.53; lambda_l2=18.8 : y = 3e+03 : 44.0 secs : initdesign
+[mbo] 0: learning_rate=0.0411; num_leaves=109; min_data_in_leaf=46; feature_fraction=0.941; bagging_fraction=0.978; lambda_l1=3.57; lambda_l2=6.38 : y = 3e+03 : 31.4 secs : initdesign
+[mbo] 0: learning_rate=0.065; num_leaves=347; min_data_in_leaf=38; feature_fraction=0.842; bagging_fraction=0.97; lambda_l1=8.38; lambda_l2=12.4 : y = 3e+03 : 53.0 secs : initdesign
+[mbo] 0: learning_rate=0.0696; num_leaves=505; min_data_in_leaf=141; feature_fraction=0.729; bagging_fraction=0.945; lambda_l1=5.78; lambda_l2=0.85 : y = 3e+03 : 57.2 secs : initdesign
+[mbo] 0: learning_rate=0.0625; num_leaves=145; min_data_in_leaf=109; feature_fraction=0.894; bagging_fraction=0.7; lambda_l1=6.33; lambda_l2=3.5 : y = 3e+03 : 35.2 secs : initdesign
+[mbo] 0: learning_rate=0.0914; num_leaves=56; min_data_in_leaf=190; feature_fraction=0.782; bagging_fraction=0.898; lambda_l1=7.95; lambda_l2=15.9 : y = 3e+03 : 8.4 secs : initdesign
+[mbo] 0: learning_rate=0.0763; num_leaves=201; min_data_in_leaf=187; feature_fraction=0.854; bagging_fraction=0.604; lambda_l1=1.66; lambda_l2=14.6 : y = 3e+03 : 41.0 secs : initdesign
+[mbo] 0: learning_rate=0.0892; num_leaves=391; min_data_in_leaf=103; feature_fraction=0.656; bagging_fraction=0.775; lambda_l1=7.25; lambda_l2=19.4 : y = 3e+03 : 47.5 secs : initdesign
+[mbo] 0: learning_rate=0.0147; num_leaves=441; min_data_in_leaf=172; feature_fraction=0.686; bagging_fraction=0.679; lambda_l1=6.93; lambda_l2=8.32 : y = -1.17e+05 : 47.0 secs : initdesign
+[mbo] 0: learning_rate=0.087; num_leaves=490; min_data_in_leaf=126; feature_fraction=0.945; bagging_fraction=0.724; lambda_l1=8.63; lambda_l2=13.3 : y = 3e+03 : 60.1 secs : initdesign
+[mbo] 0: learning_rate=0.0313; num_leaves=409; min_data_in_leaf=97; feature_fraction=0.988; bagging_fraction=0.935; lambda_l1=9.5; lambda_l2=0.688 : y = 3e+03 : 57.8 secs : initdesign
+[mbo] 0: learning_rate=0.0552; num_leaves=78; min_data_in_leaf=88; feature_fraction=0.606; bagging_fraction=0.828; lambda_l1=3.05; lambda_l2=9.56 : y = 3e+03 : 21.5 secs : initdesign
+[mbo] 0: learning_rate=0.0775; num_leaves=462; min_data_in_leaf=81; feature_fraction=0.661; bagging_fraction=0.633; lambda_l1=0.83; lambda_l2=10 : y = -1.14e+05 : 56.7 secs : initdesign
+[mbo] 0: learning_rate=0.0122; num_leaves=39; min_data_in_leaf=179; feature_fraction=0.753; bagging_fraction=0.995; lambda_l1=9.68; lambda_l2=13.7 : y = 3e+03 : 17.4 secs : initdesign
+[mbo] 0: learning_rate=0.0174; num_leaves=273; min_data_in_leaf=28; feature_fraction=0.983; bagging_fraction=0.786; lambda_l1=0.189; lambda_l2=11.3 : y = 3e+03 : 49.5 secs : initdesign
+[mbo] 0: learning_rate=0.0949; num_leaves=152; min_data_in_leaf=198; feature_fraction=0.825; bagging_fraction=0.879; lambda_l1=1.19; lambda_l2=2.82 : y = 3e+03 : 31.9 secs : initdesign
+[mbo] 0: learning_rate=0.0381; num_leaves=227; min_data_in_leaf=36; feature_fraction=0.786; bagging_fraction=0.627; lambda_l1=9.05; lambda_l2=16.6 : y = 3e+03 : 40.2 secs : initdesign
+[mbo] 1: learning_rate=0.0586; num_leaves=332; min_data_in_leaf=196; feature_fraction=0.94; bagging_fraction=0.926; lambda_l1=5.18; lambda_l2=19.8 : y = 3e+03 : 52.1 secs : infill_cb
+[mbo] 2: learning_rate=0.0399; num_leaves=451; min_data_in_leaf=122; feature_fraction=0.635; bagging_fraction=0.605; lambda_l1=3.59; lambda_l2=9.3 : y = 0 : 51.2 secs : infill_cb
+[mbo] 3: learning_rate=0.0387; num_leaves=442; min_data_in_leaf=127; feature_fraction=0.675; bagging_fraction=0.661; lambda_l1=3.47; lambda_l2=12.6 : y = 3e+03 : 52.7 secs : infill_cb
+[mbo] 4: learning_rate=0.0227; num_leaves=382; min_data_in_leaf=168; feature_fraction=0.79; bagging_fraction=0.856; lambda_l1=5.87; lambda_l2=13.7 : y = -5.4e+04 : 47.9 secs : infill_cb
+[mbo] 5: learning_rate=0.0486; num_leaves=244; min_data_in_leaf=166; feature_fraction=0.879; bagging_fraction=0.941; lambda_l1=4.51; lambda_l2=19.7 : y = 3e+03 : 44.2 secs : infill_cb
+[mbo] 6: learning_rate=0.0435; num_leaves=409; min_data_in_leaf=136; feature_fraction=0.606; bagging_fraction=0.759; lambda_l1=1.61; lambda_l2=0.422 : y = 3e+03 : 49.7 secs : infill_cb
+[mbo] 7: learning_rate=0.0755; num_leaves=417; min_data_in_leaf=137; feature_fraction=0.76; bagging_fraction=0.773; lambda_l1=1.58; lambda_l2=12.8 : y = 3e+03 : 55.0 secs : infill_cb
+[mbo] 8: learning_rate=0.0621; num_leaves=351; min_data_in_leaf=160; feature_fraction=0.872; bagging_fraction=0.974; lambda_l1=6.04; lambda_l2=17.9 : y = 3e+03 : 51.9 secs : infill_cb
+[mbo] 9: learning_rate=0.0936; num_leaves=105; min_data_in_leaf=146; feature_fraction=0.868; bagging_fraction=0.76; lambda_l1=3.29; lambda_l2=3.32 : y = 3e+03 : 27.9 secs : infill_cb
+[mbo] 10: learning_rate=0.0129; num_leaves=486; min_data_in_leaf=138; feature_fraction=0.658; bagging_fraction=0.901; lambda_l1=3.18; lambda_l2=2.94 : y = 3e+03 : 50.2 secs : infill_cb
+[mbo] 11: learning_rate=0.0285; num_leaves=314; min_data_in_leaf=109; feature_fraction=0.608; bagging_fraction=0.938; lambda_l1=6.78; lambda_l2=15 : y = 3e+03 : 40.9 secs : infill_cb
+[mbo] 12: learning_rate=0.0237; num_leaves=460; min_data_in_leaf=111; feature_fraction=0.958; bagging_fraction=0.743; lambda_l1=1.34; lambda_l2=0.11 : y = -1.14e+05 : 63.3 secs : infill_cb
+[mbo] 13: learning_rate=0.0652; num_leaves=59; min_data_in_leaf=100; feature_fraction=0.686; bagging_fraction=0.799; lambda_l1=5.82; lambda_l2=11.5 : y = 3e+03 : 20.3 secs : infill_cb
+[mbo] 14: learning_rate=0.0534; num_leaves=319; min_data_in_leaf=144; feature_fraction=0.887; bagging_fraction=0.731; lambda_l1=8.71; lambda_l2=17.7 : y = 3e+03 : 49.5 secs : infill_cb
+^C
+markjoyce86@instance-20251202-002153:~/WF2000$ tail -f execution_log_v5.log
+[mbo] 5: learning_rate=0.0486; num_leaves=244; min_data_in_leaf=166; feature_fraction=0.879; bagging_fraction=0.941; lambda_l1=4.51; lambda_l2=19.7 : y = 3e+03 : 44.2 secs : infill_cb
+[mbo] 6: learning_rate=0.0435; num_leaves=409; min_data_in_leaf=136; feature_fraction=0.606; bagging_fraction=0.759; lambda_l1=1.61; lambda_l2=0.422 : y = 3e+03 : 49.7 secs : infill_cb
+[mbo] 7: learning_rate=0.0755; num_leaves=417; min_data_in_leaf=137; feature_fraction=0.76; bagging_fraction=0.773; lambda_l1=1.58; lambda_l2=12.8 : y = 3e+03 : 55.0 secs : infill_cb
+[mbo] 8: learning_rate=0.0621; num_leaves=351; min_data_in_leaf=160; feature_fraction=0.872; bagging_fraction=0.974; lambda_l1=6.04; lambda_l2=17.9 : y = 3e+03 : 51.9 secs : infill_cb
+[mbo] 9: learning_rate=0.0936; num_leaves=105; min_data_in_leaf=146; feature_fraction=0.868; bagging_fraction=0.76; lambda_l1=3.29; lambda_l2=3.32 : y = 3e+03 : 27.9 secs : infill_cb
+[mbo] 10: learning_rate=0.0129; num_leaves=486; min_data_in_leaf=138; feature_fraction=0.658; bagging_fraction=0.901; lambda_l1=3.18; lambda_l2=2.94 : y = 3e+03 : 50.2 secs : infill_cb
+[mbo] 11: learning_rate=0.0285; num_leaves=314; min_data_in_leaf=109; feature_fraction=0.608; bagging_fraction=0.938; lambda_l1=6.78; lambda_l2=15 : y = 3e+03 : 40.9 secs : infill_cb
+[mbo] 12: learning_rate=0.0237; num_leaves=460; min_data_in_leaf=111; feature_fraction=0.958; bagging_fraction=0.743; lambda_l1=1.34; lambda_l2=0.11 : y = -1.14e+05 : 63.3 secs : infill_cb
+[mbo] 13: learning_rate=0.0652; num_leaves=59; min_data_in_leaf=100; feature_fraction=0.686; bagging_fraction=0.799; lambda_l1=5.82; lambda_l2=11.5 : y = 3e+03 : 20.3 secs : infill_cb
+[mbo] 14: learning_rate=0.0534; num_leaves=319; min_data_in_leaf=144; feature_fraction=0.887; bagging_fraction=0.731; lambda_l1=8.71; lambda_l2=17.7 : y = 3e+03 : 49.5 secs : infill_cb
+[mbo] 15: learning_rate=0.077; num_leaves=420; min_data_in_leaf=94; feature_fraction=0.661; bagging_fraction=0.679; lambda_l1=6.99; lambda_l2=9.99 : y = 3e+03 : 49.2 secs : infill_cb
+[mbo] 16: learning_rate=0.0856; num_leaves=431; min_data_in_leaf=53; feature_fraction=0.878; bagging_fraction=0.7; lambda_l1=1.65; lambda_l2=8.5 : y = 3e+03 : 63.0 secs : infill_cb
+[mbo] 17: learning_rate=0.03; num_leaves=144; min_data_in_leaf=29; feature_fraction=0.953; bagging_fraction=0.945; lambda_l1=1.41; lambda_l2=19.2 : y = 3e+03 : 36.0 secs : infill_cb
+[mbo] 18: learning_rate=0.0409; num_leaves=285; min_data_in_leaf=110; feature_fraction=0.939; bagging_fraction=0.875; lambda_l1=5.01; lambda_l2=14.7 : y = 3e+03 : 49.5 secs : infill_cb
+[mbo] 19: learning_rate=0.0461; num_leaves=460; min_data_in_leaf=118; feature_fraction=0.794; bagging_fraction=0.675; lambda_l1=2.86; lambda_l2=3.69 : y = 3e+03 : 59.7 secs : infill_cb
+[mbo] 20: learning_rate=0.0261; num_leaves=312; min_data_in_leaf=28; feature_fraction=0.814; bagging_fraction=0.613; lambda_l1=6.33; lambda_l2=15.8 : y = 3e+03 : 48.7 secs : infill_cb
+[mbo] 21: learning_rate=0.0555; num_leaves=377; min_data_in_leaf=43; feature_fraction=0.61; bagging_fraction=0.74; lambda_l1=7.2; lambda_l2=16.4 : y = -6.9e+04 : 47.9 secs : infill_cb
+[mbo] 22: learning_rate=0.0689; num_leaves=45; min_data_in_leaf=35; feature_fraction=0.807; bagging_fraction=0.991; lambda_l1=2.49; lambda_l2=9.16 : y = 3e+03 : 18.7 secs : infill_cb
+[mbo] 23: learning_rate=0.0133; num_leaves=92; min_data_in_leaf=168; feature_fraction=0.847; bagging_fraction=0.633; lambda_l1=9.29; lambda_l2=5.72 : y = -1.02e+05 : 26.1 secs : infill_cb
+[mbo] 24: learning_rate=0.0801; num_leaves=118; min_data_in_leaf=30; feature_fraction=0.926; bagging_fraction=0.789; lambda_l1=3.53; lambda_l2=5.65 : y = 3e+03 : 31.7 secs : infill_cb
+[mbo] 25: learning_rate=0.0204; num_leaves=349; min_data_in_leaf=170; feature_fraction=0.801; bagging_fraction=0.658; lambda_l1=7.58; lambda_l2=6.53 : y = -7.8e+04 : 46.2 secs : infill_cb
+[mbo] 26: learning_rate=0.0155; num_leaves=377; min_data_in_leaf=184; feature_fraction=0.789; bagging_fraction=0.669; lambda_l1=5.87; lambda_l2=6.77 : y = -6.3e+04 : 46.8 secs : infill_cb
+[mbo] 27: learning_rate=0.0124; num_leaves=398; min_data_in_leaf=171; feature_fraction=0.764; bagging_fraction=0.643; lambda_l1=7.26; lambda_l2=6.74 : y = -2.4e+04 : 46.2 secs : infill_cb
+[mbo] 28: learning_rate=0.0173; num_leaves=335; min_data_in_leaf=163; feature_fraction=0.83; bagging_fraction=0.68; lambda_l1=7.29; lambda_l2=5.41 : y = 3e+03 : 45.6 secs : infill_cb
+[mbo] 29: learning_rate=0.0291; num_leaves=302; min_data_in_leaf=170; feature_fraction=0.772; bagging_fraction=0.679; lambda_l1=7.27; lambda_l2=9.42 : y = 3e+03 : 44.2 secs : infill_cb
+[mbo] 30: learning_rate=0.0183; num_leaves=383; min_data_in_leaf=171; feature_fraction=0.778; bagging_fraction=0.698; lambda_l1=6.71; lambda_l2=10.4 : y = -6.3e+04 : 47.4 secs : infill_cb
+
+ ============================================================ 
+BO COMPLETE
+============================================================ 
+Duration:           42.7 minutes
+Best profit:        $126,000
+Hyperparameters:
+  learning_rate:    0.0495
+  num_leaves:       313
+  min_data_in_leaf: 166
+  feature_fraction: 0.924
+  bagging_fraction: 0.926
+  lambda_l1:        5.01
+  lambda_l2:        17.88
+============================================================ 
+✅ CHECKPOINT [BO_PROFIT_POSITIVE]: BO found positive profit: $126,000
+[1] TRUE
+
+[CHECKPOINT 2] Saving BO results...
