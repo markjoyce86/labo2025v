@@ -2043,3 +2043,73 @@ Hyperparameters:
 [1] TRUE
 
 [CHECKPOINT 2] Saving BO results...
+
+[CHECKPOINT 2] Saving BO results...
+💾 Checkpoint saved: phase11_bo_complete (8154.9 MB)         
+[1] "/dev/shm/checkpoint_phase11_bo_complete_exp2000.rds"
+✅ BO checkpoint saved
+📊 [PHASE_11_BO] Row count: 4883051
+
+✅ PHASE 11 COMPLETE
+
+ ============================================================ 
+PHASE 12: ENSEMBLE TRAINING & SCORING
+============================================================ 
+Final training rows: 944108 (20% CONTINUA)
+
+ ------------------------------------------------------------ 
+Training 4-seed ensemble (350 rounds each)...
+------------------------------------------------------------ 
+  Model 1/4 complete (seed 902389)
+  Model 2/4 complete (seed 775807)
+  Model 3/4 complete (seed 484061)
+  Model 4/4 complete (seed 962413)
+✅ CHECKPOINT [ENSEMBLE_MODELS]: All 4 ensemble models trained
+[1] TRUE
+
+✅ Ensemble training complete (10.5 minutes)
+
+[CHECKPOINT 3] Saving ensemble models...
+💾 Checkpoint saved: phase12_ensemble_complete (8239.3 MB)
+[1] "/dev/shm/checkpoint_phase12_ensemble_complete_exp2000.rds"
+✅ Ensemble checkpoint saved
+
+ ------------------------------------------------------------ 
+Scoring test month (202109)...
+------------------------------------------------------------ 
+✅ CHECKPOINT [TEST_ROWS_EXIST]: Test month 202109 rows: 165093
+[1] TRUE
+✅ Scoring complete
+
+Generating prediction files...
+✅ CHECKPOINT [SCORING_ALL_CUSTOMERS]: All 165093 customers received predictions
+[1] TRUE
+  ✓ KA2000_predictions_full.csv
+  ✓ KA2000_submission.csv
+  ✓ feature_list_exp2000.txt
+
+ ============================================================ 
+PRODUCTION RUN COMPLETE
+============================================================ 
+Experiment:          2000
+Test month:          202109
+Total customers:     165093
+Features used:       200
+
+Envios (Pred=1):     70625 (42.78%)  !!!!WRONG!!!!
+Threshold:           0.025 (2.5%)
+
+Probability range:
+  Min:               0.000024
+  Max:               0.999903
+  Min (Pred=1):      0.025000
+  Max (Pred=0):      0.024993
+
+Timing:
+  BO phase:          42.7 minutes
+  Ensemble phase:    10.5 minutes
+  Total:             53.2 minutes
+============================================================ 
+📊 [PHASE_12_SCORING] Row count: 4883051
+
+✅✅ ALL PHASES COMPLETE
